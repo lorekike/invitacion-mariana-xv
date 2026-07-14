@@ -1,1 +1,8 @@
-Versión Luxury publicada para los XV años de Mariana Rojas Sierra.
+INVITACIÓN XV DE MARIANA — VERSIÓN LUXURY
+
+1. Abre index.html para probarla.
+2. Para que "Sailor Song" empiece al tocar "Abrir invitación", coloca un archivo de audio autorizado con este nombre exacto:
+   assets/sailor-song.mp3
+3. Los navegadores móviles bloquean el sonido antes de que la persona toque la pantalla. Por eso la música se inicia inmediatamente después de pulsar "Abrir invitación".
+4. La confirmación abre WhatsApp al número +57 301 657 8609 con todos los datos diligenciados.
+5. Para compartirla mediante un enlace público, publica la carpeta completa en Netlify, GitHub Pages o un hosting similar.
