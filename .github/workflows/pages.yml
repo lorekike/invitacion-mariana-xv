@@ -23,12 +23,17 @@ jobs:
     steps:
       - name: Descargar sitio
         uses: actions/checkout@v4
-      - name: Configurar GitHub Pages
+
+      - name: Configurar y habilitar GitHub Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
       - name: Preparar archivos
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
