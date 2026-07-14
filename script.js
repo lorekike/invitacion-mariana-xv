@@ -1,20 +1,54 @@
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const intro=$('#intro'), site=$('#site'), openBtn=$('#openBtn'), song=$('#song'), musicToggle=$('#musicToggle'), toast=$('#toast');
 let musicAvailable=true;
-function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2800)}
-openBtn.addEventListener('click',async()=>{
-  intro.classList.add('opening');
-  site.setAttribute('aria-hidden','false');
-  document.body.classList.remove('locked');
-  musicToggle.classList.add('show');
-  try{await song.play();musicToggle.classList.add('playing')}catch(e){musicAvailable=false;showToast('Agrega el archivo sailor-song.mp3 para activar la música')}
-  setTimeout(()=>intro.classList.add('opened'),1250);
-  setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),1350);
-});
-musicToggle.addEventListener('click',async()=>{
-  if(!musicAvailable && !song.currentSrc){showToast('Falta assets/sailor-song.mp3');return}
-  if(song.paused){try{await song.play();musicToggle.classList.add('playing')}catch(e){showToast('No se encontró el archivo de música')}}else{song.pause();musicToggle.classList.remove('playing')}
-});
+function showToast(msg){if(!toast)return;toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2800)}
+
+function removeIntro(){
+  if(!intro)return;
+  intro.classList.add('opened');
+  intro.style.pointerEvents='none';
+  intro.setAttribute('aria-hidden','true');
+  setTimeout(()=>{
+    intro.style.display='none';
+    intro.remove();
+  },150);
+}
+
+if(openBtn){
+  openBtn.addEventListener('click',async e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    openBtn.disabled=true;
+    intro.classList.add('opening');
+    site.setAttribute('aria-hidden','false');
+    document.body.classList.remove('locked');
+    musicToggle.classList.add('show');
+    try{
+      await song.play();
+      musicToggle.classList.add('playing');
+    }catch(err){
+      musicAvailable=false;
+    }
+    setTimeout(removeIntro,1200);
+    setTimeout(()=>window.scrollTo({top:0,left:0,behavior:'auto'}),1250);
+  },{passive:false});
+}
+
+// Respaldo para navegadores móviles que interrumpen la transición
+if(intro){
+  intro.addEventListener('transitionend',e=>{
+    if(intro.classList.contains('opening') && (e.target===intro || e.target.classList.contains('curtain'))){
+      removeIntro();
+    }
+  });
+}
+
+if(musicToggle){
+  musicToggle.addEventListener('click',async()=>{
+    if(!musicAvailable && !song.currentSrc){showToast('Falta el archivo de música');return}
+    if(song.paused){try{await song.play();musicToggle.classList.add('playing')}catch(e){showToast('No se encontró el archivo de música')}}else{song.pause();musicToggle.classList.remove('playing')}
+  });
+}
 
 // Fondo estrellado con parallax suave
 const canvas=$('#sky'),ctx=canvas.getContext('2d');let stars=[],w=0,h=0,dpr=1,mx=.5,my=.5;
@@ -31,16 +65,15 @@ function tick(){const d=Math.max(0,target-Date.now());$('#days').textContent=Str
 
 // Carrusel
 const slides=$$('.slide'), dots=$('.dots');let current=0,timer;
-slides.forEach((_,i)=>{const b=document.createElement('button');b.setAttribute('aria-label',`Ver foto ${i+1}`);b.addEventListener('click',()=>go(i));dots.appendChild(b)});
+if(slides.length&&dots){slides.forEach((_,i)=>{const b=document.createElement('button');b.setAttribute('aria-label',`Ver foto ${i+1}`);b.addEventListener('click',()=>go(i));dots.appendChild(b)});
 function go(n){slides[current].classList.remove('active');dots.children[current].classList.remove('active');current=(n+slides.length)%slides.length;slides[current].classList.add('active');dots.children[current].classList.add('active');clearInterval(timer);timer=setInterval(()=>go(current+1),5200)}
-$('.prev').onclick=()=>go(current-1);$('.next').onclick=()=>go(current+1);go(0);
+const prev=$('.prev'),next=$('.next');if(prev)prev.onclick=()=>go(current-1);if(next)next.onclick=()=>go(current+1);go(0)}
 
 // Calendario ICS
-$('#calendarBtn').addEventListener('click',()=>{const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//XV Mariana//ES\r\nBEGIN:VEVENT\r\nUID:mariana-xv-20261115@example.com\r\nDTSTAMP:20260714T190000Z\r\nDTSTART:20261116T010000Z\r\nDTEND:20261116T060000Z\r\nSUMMARY:XV años de Mariana Rojas Sierra\r\nLOCATION:Orquideorama, Av. 2 Norte # 48-10\r\nDESCRIPTION:Celebración de los XV años de Mariana. Código de vestuario: semi formal.\r\nEND:VEVENT\r\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='XV-Mariana-Rojas-Sierra.ics';a.click();URL.revokeObjectURL(a.href)});
+const calendarBtn=$('#calendarBtn');if(calendarBtn)calendarBtn.addEventListener('click',()=>{const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//XV Mariana//ES\r\nBEGIN:VEVENT\r\nUID:mariana-xv-20261115@example.com\r\nDTSTAMP:20260714T190000Z\r\nDTSTART:20261116T010000Z\r\nDTEND:20261116T060000Z\r\nSUMMARY:XV años de Mariana Rojas Sierra\r\nLOCATION:Orquideorama, Av. 2 Norte # 48-10\r\nDESCRIPTION:Celebración de los XV años de Mariana. Código de vestuario: semi formal.\r\nEND:VEVENT\r\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='XV-Mariana-Rojas-Sierra.ics';a.click();URL.revokeObjectURL(a.href)});
 
 // RSVP WhatsApp
 const dialog=$('#rsvpDialog'),form=$('#rsvpForm');
 $$('.guest-card').forEach(b=>b.onclick=()=>{const type=b.dataset.type;$('#guestType').value=type;$('#formTitle').textContent=type==='school'?'Confirmación · Colegio':'Confirmación · Invitado adulto';$('#schoolFields').classList.toggle('hidden',type!=='school');$('#adultFields').classList.toggle('hidden',type!=='adult');dialog.showModal()});
-$('#adultCount').onchange=e=>$('#adult2Label').classList.toggle('hidden',e.target.value!=='2');
-$('#withCompanion').onchange=e=>$('#companionLabel').classList.toggle('hidden',e.target.value!=='Sí');
-form.addEventListener('submit',e=>{e.preventDefault();const type=$('#guestType').value,name=$('#guestName').value.trim(),att=$('#attendance').value;if(!name||!att){showToast('Completa tu nombre y asistencia');return}let lines=[`✨ *Confirmación XV de Mariana*`,``,`Nombre: ${name}`,`Tipo de invitado: ${type==='school'?'Compañero(a) del colegio':'Invitado adulto'}`,`Asistencia: ${att}`];if(att==='Sí'&&type==='school'){lines.push(`Adultos acompañantes: ${$('#adultCount').value}`,`Adulto 1: ${$('#adult1').value.trim()||'Sin registrar'}`);if($('#adultCount').value==='2')lines.push(`Adulto 2: ${$('#adult2').value.trim()||'Sin registrar'}`)}if(att==='Sí'&&type==='adult'){lines.push(`Con acompañante: ${$('#withCompanion').value}`);if($('#withCompanion').value==='Sí')lines.push(`Acompañante: ${$('#companionName').value.trim()||'Sin registrar'}`)}const notes=$('#notes').value.trim();if(notes)lines.push(`Observaciones: ${notes}`);window.open(`https://wa.me/573016578609?text=${encodeURIComponent(lines.join('\n'))}`,'_blank','noopener');dialog.close()});
+const adultCount=$('#adultCount'),withCompanion=$('#withCompanion');if(adultCount)adultCount.onchange=e=>$('#adult2Label').classList.toggle('hidden',e.target.value!=='2');if(withCompanion)withCompanion.onchange=e=>$('#companionLabel').classList.toggle('hidden',e.target.value!=='Sí');
+if(form)form.addEventListener('submit',e=>{e.preventDefault();const type=$('#guestType').value,name=$('#guestName').value.trim(),att=$('#attendance').value;if(!name||!att){showToast('Completa tu nombre y asistencia');return}let lines=[`✨ *Confirmación XV de Mariana*`,``,`Nombre: ${name}`,`Tipo de invitado: ${type==='school'?'Compañero(a) del colegio':'Invitado adulto'}`,`Asistencia: ${att}`];if(att==='Sí'&&type==='school'){lines.push(`Adultos acompañantes: ${$('#adultCount').value}`,`Adulto 1: ${$('#adult1').value.trim()||'Sin registrar'}`);if($('#adultCount').value==='2')lines.push(`Adulto 2: ${$('#adult2').value.trim()||'Sin registrar'}`)}if(att==='Sí'&&type==='adult'){lines.push(`Con acompañante: ${$('#withCompanion').value}`);if($('#withCompanion').value==='Sí')lines.push(`Acompañante: ${$('#companionName').value.trim()||'Sin registrar'}`)}const notes=$('#notes').value.trim();if(notes)lines.push(`Observaciones: ${notes}`);window.open(`https://wa.me/573016578609?text=${encodeURIComponent(lines.join('\n'))}`,'_blank','noopener');dialog.close()});
