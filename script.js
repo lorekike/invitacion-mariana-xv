@@ -93,7 +93,7 @@ function createButterflies(){
     butterfly.style.setProperty('--delay',`${-Math.random()*24}s`);
     butterfly.style.setProperty('--start-y',`${12+Math.random()*76}vh`);
     butterfly.style.setProperty('--end-y',`${8+Math.random()*70}vh`);
-    butterfly.innerHTML='<span class="butterfly-inner"><i class="butterfly-wing left"></i><i class="butterfly-wing right"></i><b class="butterfly-body"></b></span>';
+    butterfly.innerHTML=`<span class="butterfly-inner"><svg class="butterfly-svg" viewBox="0 0 120 90" role="presentation"><g class="svg-wing svg-wing-left"><path class="wing-main" d="M58 44C45 8 9 2 8 25c-1 18 18 24 35 25-13 5-25 18-17 29 9 12 27-7 34-24z"/><path class="wing-mark" d="M45 39C35 17 17 14 15 27c-2 9 13 13 30 12M43 57c-10 4-17 12-11 17 6 4 14-7 18-17"/><circle cx="25" cy="28" r="4"/></g><g class="svg-wing svg-wing-right"><path class="wing-main" d="M62 44c13-36 49-42 50-19 1 18-18 24-35 25 13 5 25 18 17 29-9 12-27-7-34-24z"/><path class="wing-mark" d="M75 39c10-22 28-25 30-12 2 9-13 13-30 12M77 57c10 4 17 12 11 17-6 4-14-7-18-17"/><circle cx="95" cy="28" r="4"/></g><path class="antenna" d="M58 21C48 8 41 11 39 4M62 21C72 8 79 11 81 4"/><ellipse class="svg-body" cx="60" cy="48" rx="4.8" ry="27"/><circle class="svg-head" cx="60" cy="20" r="6"/></svg></span>`;
     field.appendChild(butterfly);
   }
   document.body.appendChild(field);
