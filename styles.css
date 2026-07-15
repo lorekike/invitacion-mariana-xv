@@ -23,3 +23,22 @@ body:not(.locked) .butterfly-field{opacity:1}
 @keyframes butterflyFlight{0%{transform:translate3d(-12vw,var(--start-y),0) scale(.72);opacity:0}7%{opacity:.82}28%{transform:translate3d(26vw,calc(var(--start-y) - 13vh),0) scale(.9)}52%{transform:translate3d(55vw,calc(var(--end-y) + 18vh),0) scale(1)}76%{transform:translate3d(83vw,var(--end-y),0) scale(.82);opacity:.78}100%{transform:translate3d(116vw,calc(var(--end-y) - 10vh),0) scale(.62);opacity:0}}
 @media(max-width:600px){.butterfly{--size:27px;filter:drop-shadow(0 0 5px rgba(255,230,166,.3))}.butterfly:nth-child(n+8){display:none}}
 @media(prefers-reduced-motion:reduce){.butterfly-field{display:none}}
+
+
+/* Mariposas v2: silueta SVG reconocible y visibles desde la portada */
+.butterfly-field{z-index:55;opacity:1}
+body:not(.locked) .butterfly-field{opacity:1}
+.butterfly{width:var(--size);height:calc(var(--size)*.75);filter:drop-shadow(0 2px 5px rgba(0,0,0,.35)) drop-shadow(0 0 7px rgba(255,230,166,.38))}
+.butterfly-inner,.butterfly-svg{display:block;width:100%;height:100%;overflow:visible}
+.butterfly-svg{transform:rotate(-7deg)}
+.svg-wing{transform-box:fill-box;animation:svgWingFlap .62s ease-in-out infinite alternate}
+.svg-wing-left{transform-origin:right center}
+.svg-wing-right{transform-origin:left center;animation-direction:alternate-reverse}
+.wing-main{fill:url("#none");fill:#d9b35f;stroke:#fff0bd;stroke-width:2.1;stroke-linejoin:round}
+.svg-wing-left .wing-main{fill:#d7aa4c}.svg-wing-right .wing-main{fill:#c5913f}
+.wing-mark{fill:none;stroke:#70427e;stroke-width:3;stroke-linecap:round;opacity:.9}
+.svg-wing circle{fill:#fff0bd;stroke:#70427e;stroke-width:2}
+.svg-body{fill:#39233f;stroke:#ffe6a6;stroke-width:1.5}.svg-head{fill:#503052;stroke:#ffe6a6;stroke-width:1.5}
+.antenna{fill:none;stroke:#ffe6a6;stroke-width:2;stroke-linecap:round}
+@keyframes svgWingFlap{from{transform:perspective(110px) rotateY(58deg) scaleX(.7)}to{transform:perspective(110px) rotateY(4deg) scaleX(1)}}
+@media(max-width:600px){.butterfly-field{z-index:55}.butterfly{filter:drop-shadow(0 1px 3px rgba(0,0,0,.35)) drop-shadow(0 0 4px rgba(255,230,166,.3))}}
