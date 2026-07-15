@@ -104,3 +104,17 @@ body:not(.locked) .quick-nav{transform:translate(0,-50%);opacity:1;pointer-event
   .quick-nav a.active b,.quick-nav a:hover b,.quick-nav a:focus-visible b{color:var(--gold2);background:transparent;box-shadow:none}
   .music-toggle{bottom:86px}
 }
+
+
+/* Ajuste final v6: botones de navegación ligeramente más grandes */
+.quick-nav a{min-height:48px}
+.quick-nav a b{width:46px;height:46px;font-size:1rem}
+.quick-nav a span{font-size:.64rem;padding:.58rem .86rem}
+@media(max-width:600px){
+  body{padding-bottom:90px}
+  .quick-nav{height:72px;padding:8px 7px;border-radius:25px}
+  .quick-nav a{min-height:56px}
+  .quick-nav a b{width:auto;height:auto;font-size:1.08rem}
+  .quick-nav a span,.quick-nav a:hover span,.quick-nav a:focus-visible span,.quick-nav a.active span{font-size:.5rem}
+  .music-toggle{bottom:94px}
+}
