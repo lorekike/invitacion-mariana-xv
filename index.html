@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@300;400;500;600&family=Parisienne&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="mobile.css">
+<link rel="stylesheet" href="styles.css?v=mariposas-3">
+<link rel="stylesheet" href="mobile.css?v=mariposas-3">
 </head>
 <body class="locked">
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -76,5 +76,5 @@
   <footer class="panel"><div class="footer-stars">✦　✧　✦</div><p>Será una noche inolvidable</p><span>Mariana Rojas Sierra · XV</span></footer>
 </main>
 <dialog id="rsvpDialog"><form method="dialog" id="rsvpForm" class="modal"><button class="close" value="cancel" aria-label="Cerrar">×</button><p class="kicker">Confirmación de asistencia</p><h3 id="formTitle">Confirma tu asistencia</h3><input type="hidden" id="guestType"><label>Nombre completo<input id="guestName" required autocomplete="name" placeholder="Escribe tu nombre"></label><label>¿Asistirás?<select id="attendance" required><option value="">Selecciona una opción</option><option value="Sí">Sí, asistiré</option><option value="No">No podré asistir</option></select></label><div id="schoolFields" class="conditional hidden"><label>Adultos acompañantes<select id="adultCount"><option value="1">1 adulto</option><option value="2">2 adultos</option></select></label><label>Nombre del adulto 1<input id="adult1"></label><label id="adult2Label" class="hidden">Nombre del adulto 2<input id="adult2"></label></div><div id="adultFields" class="conditional hidden"><label>¿Vendrás con acompañante?<select id="withCompanion"><option value="No">No</option><option value="Sí">Sí</option></select></label><label id="companionLabel" class="hidden">Nombre del acompañante<input id="companionName"></label></div><label>Observaciones alimentarias <small>(opcional)</small><textarea id="notes" rows="3" placeholder="Alergias o restricciones"></textarea></label><button type="submit" class="primary full">Enviar por WhatsApp</button><p class="privacy">Se abrirá WhatsApp con tu confirmación lista para enviar.</p></form></dialog>
-<div id="toast" class="toast"></div><script src="script.js"></script>
+<div id="toast" class="toast"></div><script src="script.js?v=mariposas-3"></script>
 </body></html>
