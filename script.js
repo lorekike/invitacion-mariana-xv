@@ -77,3 +77,25 @@ const dialog=$('#rsvpDialog'),form=$('#rsvpForm');
 $$('.guest-card').forEach(b=>b.onclick=()=>{const type=b.dataset.type;$('#guestType').value=type;$('#formTitle').textContent=type==='school'?'Confirmación · Colegio':'Confirmación · Invitado adulto';$('#schoolFields').classList.toggle('hidden',type!=='school');$('#adultFields').classList.toggle('hidden',type!=='adult');dialog.showModal()});
 const adultCount=$('#adultCount'),withCompanion=$('#withCompanion');if(adultCount)adultCount.onchange=e=>$('#adult2Label').classList.toggle('hidden',e.target.value!=='2');if(withCompanion)withCompanion.onchange=e=>$('#companionLabel').classList.toggle('hidden',e.target.value!=='Sí');
 if(form)form.addEventListener('submit',e=>{e.preventDefault();const type=$('#guestType').value,name=$('#guestName').value.trim(),att=$('#attendance').value;if(!name||!att){showToast('Completa tu nombre y asistencia');return}let lines=[`✨ *Confirmación XV de Mariana*`,``,`Nombre: ${name}`,`Tipo de invitado: ${type==='school'?'Compañero(a) del colegio':'Invitado adulto'}`,`Asistencia: ${att}`];if(att==='Sí'&&type==='school'){lines.push(`Adultos acompañantes: ${$('#adultCount').value}`,`Adulto 1: ${$('#adult1').value.trim()||'Sin registrar'}`);if($('#adultCount').value==='2')lines.push(`Adulto 2: ${$('#adult2').value.trim()||'Sin registrar'}`)}if(att==='Sí'&&type==='adult'){lines.push(`Con acompañante: ${$('#withCompanion').value}`);if($('#withCompanion').value==='Sí')lines.push(`Acompañante: ${$('#companionName').value.trim()||'Sin registrar'}`)}const notes=$('#notes').value.trim();if(notes)lines.push(`Observaciones: ${notes}`);window.open(`https://wa.me/573016578609?text=${encodeURIComponent(lines.join('\n'))}`,'_blank','noopener');dialog.close()});
+
+// Mariposas doradas volando suavemente por la invitación
+function createButterflies(){
+  if(document.querySelector('.butterfly-field'))return;
+  const field=document.createElement('div');
+  field.className='butterfly-field';
+  field.setAttribute('aria-hidden','true');
+  const total=innerWidth<=600?7:12;
+  for(let i=0;i<total;i++){
+    const butterfly=document.createElement('span');
+    butterfly.className='butterfly';
+    butterfly.style.setProperty('--size',`${22+Math.random()*24}px`);
+    butterfly.style.setProperty('--duration',`${15+Math.random()*12}s`);
+    butterfly.style.setProperty('--delay',`${-Math.random()*24}s`);
+    butterfly.style.setProperty('--start-y',`${12+Math.random()*76}vh`);
+    butterfly.style.setProperty('--end-y',`${8+Math.random()*70}vh`);
+    butterfly.innerHTML='<span class="butterfly-inner"><i class="butterfly-wing left"></i><i class="butterfly-wing right"></i><b class="butterfly-body"></b></span>';
+    field.appendChild(butterfly);
+  }
+  document.body.appendChild(field);
+}
+createButterflies();
