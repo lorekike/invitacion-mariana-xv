@@ -99,3 +99,31 @@ function createButterflies(){
   document.body.appendChild(field);
 }
 createButterflies();
+
+
+// Navegación directa entre secciones y estado de lectura
+const quickNav=$('#quickNav'),progressBar=$('#readingProgress span');
+if(quickNav){
+  const navLinks=[...quickNav.querySelectorAll('a')];
+  navLinks.forEach(link=>link.addEventListener('click',e=>{
+    const target=$(link.getAttribute('href'));
+    if(!target)return;
+    e.preventDefault();
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+    history.replaceState(null,'',link.getAttribute('href'));
+  }));
+  const navObserver=new IntersectionObserver(entries=>{
+    const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+    if(!visible)return;
+    navLinks.forEach(link=>link.classList.toggle('active',link.dataset.section===visible.target.id));
+  },{rootMargin:'-28% 0px -52% 0px',threshold:[0,.1,.3,.6]});
+  ['inicio','fecha','celebracion','galeria','rsvp'].forEach(id=>{const section=$('#'+id);if(section)navObserver.observe(section)});
+}
+function updateReadingProgress(){
+  if(!progressBar)return;
+  const max=document.documentElement.scrollHeight-innerHeight;
+  progressBar.style.width=(max>0?Math.min(100,Math.max(0,scrollY/max*100)):0)+'%';
+}
+addEventListener('scroll',updateReadingProgress,{passive:true});
+addEventListener('resize',updateReadingProgress);
+updateReadingProgress();
