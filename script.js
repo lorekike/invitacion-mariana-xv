@@ -88,7 +88,7 @@ function createButterflies(){
   for(let i=0;i<total;i++){
     const butterfly=document.createElement('span');
     butterfly.className='butterfly';
-    butterfly.style.setProperty('--size',`${22+Math.random()*24}px`);
+    butterfly.style.setProperty('--size',`${innerWidth<=600?30+Math.random()*18:42+Math.random()*34}px`);
     butterfly.style.setProperty('--duration',`${15+Math.random()*12}s`);
     butterfly.style.setProperty('--delay',`${-Math.random()*24}s`);
     butterfly.style.setProperty('--start-y',`${12+Math.random()*76}vh`);
