@@ -94,7 +94,7 @@ const RSVP_FIELDS={
   companionName:'entry.1093298662',
   notes:'entry.1088589983'
 };
-$('.guest-card').forEach(b=>b.onclick=()=>{
+$$('.guest-card').forEach(b=>b.onclick=()=>{
   if(hasConfirmedRsvp()){applyConfirmedRsvp();showToast('Este dispositivo ya registró una confirmación');return}
   form.reset();
   const type=b.dataset.type;
