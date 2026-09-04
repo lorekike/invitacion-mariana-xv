@@ -75,6 +75,15 @@ const calendarBtn=$('#calendarBtn');if(calendarBtn)calendarBtn.addEventListener(
 // RSVP · registro consolidado en Google Forms / Sheets
 const dialog=$('#rsvpDialog'),form=$('#rsvpForm');
 const RSVP_ENDPOINT='https://docs.google.com/forms/d/e/1FAIpQLScfSxFHk8G92dlHLKmUX5wnGdX1W9Co98g5MnIZUhyBuG2t5A/formResponse';
+const RSVP_STORAGE_KEY='mariana-xv-rsvp-confirmed-v1';
+function hasConfirmedRsvp(){try{return localStorage.getItem(RSVP_STORAGE_KEY)==='yes'}catch(e){return false}}
+function markConfirmedRsvp(){try{localStorage.setItem(RSVP_STORAGE_KEY,'yes')}catch(e){}}
+function applyConfirmedRsvp(){
+  const confirmed=hasConfirmedRsvp(),grid=$('.rsvp-grid'),status=$('#rsvpStatus');
+  if(grid)grid.classList.toggle('hidden',confirmed);
+  if(status)status.classList.toggle('hidden',!confirmed);
+  if(confirmed&&dialog?.open)dialog.close();
+}
 const RSVP_FIELDS={
   name:'entry.83220831',
   type:'entry.1410360293',
@@ -85,7 +94,8 @@ const RSVP_FIELDS={
   companionName:'entry.1093298662',
   notes:'entry.1088589983'
 };
-$$('.guest-card').forEach(b=>b.onclick=()=>{
+$('.guest-card').forEach(b=>b.onclick=()=>{
+  if(hasConfirmedRsvp()){applyConfirmedRsvp();showToast('Este dispositivo ya registró una confirmación');return}
   form.reset();
   const type=b.dataset.type;
   $('#guestType').value=type;
@@ -95,6 +105,18 @@ $$('.guest-card').forEach(b=>b.onclick=()=>{
   $('#companionLabel').classList.add('hidden');
   dialog.showModal();
 });
+const closeRsvp=$('#closeRsvp');
+if(closeRsvp)closeRsvp.addEventListener('click',()=>dialog.close());
+if(dialog){
+  dialog.addEventListener('click',e=>{
+    const box=dialog.getBoundingClientRect();
+    const outside=e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom;
+    if(outside)dialog.close();
+  });
+  dialog.addEventListener('close',()=>form.reset());
+}
+applyConfirmedRsvp();
+
 const withCompanion=$('#withCompanion');
 if(withCompanion)withCompanion.onchange=e=>$('#companionLabel').classList.toggle('hidden',e.target.value!=='Sí');
 
@@ -127,8 +149,10 @@ if(form)form.addEventListener('submit',async e=>{
 
   try{
     await fetch(RSVP_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()});
+    markConfirmedRsvp();
     dialog.close();
     form.reset();
+    applyConfirmedRsvp();
     showToast('¡Confirmación guardada! Gracias por responder');
   }catch(err){
     showToast('No pudimos guardar. Revisa tu conexión e inténtalo de nuevo');
