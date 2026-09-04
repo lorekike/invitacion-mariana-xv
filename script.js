@@ -72,11 +72,71 @@ const prev=$('.prev'),next=$('.next');if(prev)prev.onclick=()=>go(current-1);if(
 // Calendario ICS
 const calendarBtn=$('#calendarBtn');if(calendarBtn)calendarBtn.addEventListener('click',()=>{const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//XV Mariana//ES\r\nBEGIN:VEVENT\r\nUID:mariana-xv-20261115@example.com\r\nDTSTAMP:20260714T190000Z\r\nDTSTART:20261116T010000Z\r\nDTEND:20261116T060000Z\r\nSUMMARY:XV años de Mariana Rojas Sierra\r\nLOCATION:Orquideorama, Av. 2 Norte # 48-10\r\nDESCRIPTION:Celebración de los XV años de Mariana. Código de vestuario: semi formal.\r\nEND:VEVENT\r\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='XV-Mariana-Rojas-Sierra.ics';a.click();URL.revokeObjectURL(a.href)});
 
-// RSVP WhatsApp
+// RSVP · registro consolidado en Google Forms / Sheets
 const dialog=$('#rsvpDialog'),form=$('#rsvpForm');
-$$('.guest-card').forEach(b=>b.onclick=()=>{const type=b.dataset.type;$('#guestType').value=type;$('#formTitle').textContent=type==='school'?'Confirmación · Colegio':'Confirmación · Invitado adulto';$('#schoolFields').classList.toggle('hidden',type!=='school');$('#adultFields').classList.toggle('hidden',type!=='adult');dialog.showModal()});
-const adultCount=$('#adultCount'),withCompanion=$('#withCompanion');if(adultCount)adultCount.onchange=e=>$('#adult2Label').classList.toggle('hidden',e.target.value!=='2');if(withCompanion)withCompanion.onchange=e=>$('#companionLabel').classList.toggle('hidden',e.target.value!=='Sí');
-if(form)form.addEventListener('submit',e=>{e.preventDefault();const type=$('#guestType').value,name=$('#guestName').value.trim(),att=$('#attendance').value;if(!name||!att){showToast('Completa tu nombre y asistencia');return}let lines=[`✨ *Confirmación XV de Mariana*`,``,`Nombre: ${name}`,`Tipo de invitado: ${type==='school'?'Compañero(a) del colegio':'Invitado adulto'}`,`Asistencia: ${att}`];if(att==='Sí'&&type==='school'){lines.push(`Adultos acompañantes: ${$('#adultCount').value}`,`Adulto 1: ${$('#adult1').value.trim()||'Sin registrar'}`);if($('#adultCount').value==='2')lines.push(`Adulto 2: ${$('#adult2').value.trim()||'Sin registrar'}`)}if(att==='Sí'&&type==='adult'){lines.push(`Con acompañante: ${$('#withCompanion').value}`);if($('#withCompanion').value==='Sí')lines.push(`Acompañante: ${$('#companionName').value.trim()||'Sin registrar'}`)}const notes=$('#notes').value.trim();if(notes)lines.push(`Observaciones: ${notes}`);window.open(`https://wa.me/573016578609?text=${encodeURIComponent(lines.join('\n'))}`,'_blank','noopener');dialog.close()});
+const RSVP_ENDPOINT='https://docs.google.com/forms/d/e/1FAIpQLScfSxFHk8G92dlHLKmUX5wnGdX1W9Co98g5MnIZUhyBuG2t5A/formResponse';
+const RSVP_FIELDS={
+  name:'entry.83220831',
+  type:'entry.1410360293',
+  attendance:'entry.69481772',
+  adultCount:'entry.150819483',
+  adultName:'entry.554122690',
+  withCompanion:'entry.1398819219',
+  companionName:'entry.1093298662',
+  notes:'entry.1088589983'
+};
+$$('.guest-card').forEach(b=>b.onclick=()=>{
+  form.reset();
+  const type=b.dataset.type;
+  $('#guestType').value=type;
+  $('#formTitle').textContent=type==='school'?'Confirmación · Colegio':'Confirmación · Invitado adulto';
+  $('#schoolFields').classList.toggle('hidden',type!=='school');
+  $('#adultFields').classList.toggle('hidden',type!=='adult');
+  $('#companionLabel').classList.add('hidden');
+  dialog.showModal();
+});
+const withCompanion=$('#withCompanion');
+if(withCompanion)withCompanion.onchange=e=>$('#companionLabel').classList.toggle('hidden',e.target.value!=='Sí');
+
+if(form)form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const type=$('#guestType').value;
+  const name=$('#guestName').value.trim();
+  const attendance=$('#attendance').value;
+  const adultName=$('#adult1').value.trim();
+  const hasCompanion=$('#withCompanion').value;
+  const companionName=$('#companionName').value.trim();
+
+  if(!name||!attendance){showToast('Completa tu nombre y asistencia');return}
+  if(attendance==='Sí'&&type==='school'&&!adultName){showToast('Escribe el nombre del adulto acompañante');return}
+  if(attendance==='Sí'&&type==='adult'&&hasCompanion==='Sí'&&!companionName){showToast('Escribe el nombre de tu acompañante');return}
+
+  const submitBtn=form.querySelector('button[type="submit"]');
+  submitBtn.disabled=true;
+  submitBtn.textContent='Guardando…';
+
+  const data=new URLSearchParams();
+  data.set(RSVP_FIELDS.name,name);
+  data.set(RSVP_FIELDS.type,type==='school'?'Compañero(a) del colegio':'Invitado adulto');
+  data.set(RSVP_FIELDS.attendance,attendance);
+  data.set(RSVP_FIELDS.adultCount,attendance==='Sí'&&type==='school'?'1':'');
+  data.set(RSVP_FIELDS.adultName,attendance==='Sí'&&type==='school'?adultName:'');
+  data.set(RSVP_FIELDS.withCompanion,attendance==='Sí'&&type==='adult'?hasCompanion:'');
+  data.set(RSVP_FIELDS.companionName,attendance==='Sí'&&type==='adult'&&hasCompanion==='Sí'?companionName:'');
+  data.set(RSVP_FIELDS.notes,$('#notes').value.trim());
+
+  try{
+    await fetch(RSVP_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()});
+    dialog.close();
+    form.reset();
+    showToast('¡Confirmación guardada! Gracias por responder');
+  }catch(err){
+    showToast('No pudimos guardar. Revisa tu conexión e inténtalo de nuevo');
+  }finally{
+    submitBtn.disabled=false;
+    submitBtn.textContent='Guardar confirmación';
+  }
+});
 
 // Mariposas doradas volando suavemente por la invitación
 function createButterflies(){
