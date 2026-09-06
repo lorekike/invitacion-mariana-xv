@@ -84,7 +84,7 @@ footer.visible .footer-stars{animation:footerSparkle 1.8s ease-in-out infinite}
 #inicio,#fecha,#celebracion,#galeria,#rsvp{scroll-margin-top:24px}
 
 /* Portada sin fotografía: conserva el diseño aprobado y centra el mensaje */
-body{background:radial-gradient(circle at 50% 0,#10356b 0,#071a39 30%,#020817 72%)}
+body{background:linear-gradient(90deg,#01040d 0%,#041127 24%,#061a38 50%,#041127 76%,#01040d 100%)}
 main{opacity:1;transform:none;transition:opacity .85s ease,transform 1s ease}
 body.entering main{opacity:0;transform:scale(.985)}
 .intro.opening .intro-card{animation:none;opacity:0;transform:scale(.9);transition:opacity .32s ease,transform .5s ease}
