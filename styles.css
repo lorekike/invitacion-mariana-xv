@@ -88,6 +88,12 @@ footer.visible .footer-stars{animation:footerSparkle 1.8s ease-in-out infinite}
 .hero-copy{text-align:center;max-width:760px;margin:auto}
 .hero-copy .poem{margin-inline:auto}
 .hero .moon{right:50%;transform:translateX(50%)}
+.dress-note{text-align:center;margin:1.5rem auto 0;color:var(--gold2);font:italic 400 1.18rem 'Cormorant Garamond',serif;letter-spacing:.025em}
+.slide{background:#020817;isolation:isolate}
+.slide:before{content:"";position:absolute;z-index:0;inset:-28px;background-image:linear-gradient(rgba(2,8,23,.36),rgba(2,8,23,.5)),var(--photo);background-size:cover;background-position:center;filter:blur(20px) saturate(.75);transform:scale(1.12);opacity:.78}
+.slide img{position:relative;z-index:1;object-fit:contain!important;object-position:center!important}
+.slide:after{z-index:2}
+.slide figcaption{z-index:3}
 .reading-progress{position:fixed;z-index:45;top:0;left:0;width:100%;height:3px;background:rgba(255,255,255,.05);opacity:0;transition:opacity .5s}
 .reading-progress span{display:block;width:0;height:100%;background:linear-gradient(90deg,#8c5aa0,var(--gold2),#d9b35f);box-shadow:0 0 12px rgba(255,230,166,.65)}
 body:not(.locked) .reading-progress{opacity:1}
