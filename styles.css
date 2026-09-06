@@ -85,6 +85,18 @@ footer.visible .footer-stars{animation:footerSparkle 1.8s ease-in-out infinite}
 
 /* Portada sin fotografía: conserva el diseño aprobado y centra el mensaje */
 body{background:linear-gradient(90deg,#01040d 0%,#041127 24%,#061a38 50%,#041127 76%,#01040d 100%)}
+body{font-family:'Cormorant Garamond',serif;font-size:1.08rem}
+.kicker,.mis,.primary,.secondary,.info-card small,.guest-card i,.quick-nav,.music-label,footer span{font-family:Cinzel,serif}
+.poem,.info-card strong,.quote-band p,.slide figcaption,.guest-card b,.guest-card small,.deadline,.gift p,.rsvp-status p,.modal label,.privacy{font-family:'Cormorant Garamond',serif}
+.poem{font-size:1.42rem;line-height:1.7}
+.info-card strong{font-size:1.42rem}
+.rsvp-grid{grid-template-columns:1fr;max-width:620px}
+.guest-card{text-align:center;padding:2.3rem 2rem}
+.guest-card b{font-size:1.75rem}
+.guest-card small{font-size:1.08rem}
+.rsvp .section-head h3{font-size:clamp(3.2rem,6vw,4.7rem);line-height:1}
+.deadline{font-size:1.2rem}
+.modal label{font-size:1rem}
 main{opacity:1;transform:none;transition:opacity .85s ease,transform 1s ease}
 body.entering main{opacity:0;transform:scale(.985)}
 .intro.opening .intro-card{animation:none;opacity:0;transform:scale(.9);transition:opacity .32s ease,transform .5s ease}

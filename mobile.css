@@ -10,3 +10,5 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:1
 dialog{width:calc(100% - 24px);max-height:92svh;margin:auto}.modal{padding:1.4rem 1rem 1.2rem;border-radius:22px;max-height:92svh;overflow-y:auto}.modal h3{font-size:2.7rem;margin:.2rem 0 .8rem}.modal label{font-size:.74rem;margin:.8rem 0}.modal input,.modal select,.modal textarea{font-size:16px;padding:.85rem}.close{right:.7rem;top:.35rem}.music-toggle{right:12px;bottom:max(12px,env(safe-area-inset-bottom))}
 }
 @media (max-width:380px){.intro h1{font-size:4.15rem}.hero-copy h2{font-size:4.45rem}.countdown strong{font-size:1.55rem}.countdown span{font-size:.38rem}.panel{padding-left:14px;padding-right:14px}}
+@media (max-width:600px){.rsvp .section-head h3{font-size:3.15rem;line-height:.98}.deadline{font-size:1.08rem}.guest-card{padding:1.8rem 1.2rem}.guest-card b{font-size:1.55rem}.guest-card small{font-size:1rem}}
+@media (max-width:380px){.rsvp .section-head h3{font-size:2.85rem}.deadline{font-size:1rem}}

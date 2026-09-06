@@ -91,21 +91,13 @@ const RSVP_FIELDS={
   name:'entry.83220831',
   type:'entry.1410360293',
   attendance:'entry.69481772',
-  adultCount:'entry.150819483',
-  adultName:'entry.554122690',
-  withCompanion:'entry.1398819219',
-  companionName:'entry.1093298662',
   notes:'entry.1088589983'
 };
 $$('.guest-card').forEach(b=>b.onclick=()=>{
   if(hasConfirmedRsvp()){applyConfirmedRsvp();showToast('Este dispositivo ya registró una confirmación');return}
   form.reset();
-  const type=b.dataset.type;
-  $('#guestType').value=type;
-  $('#formTitle').textContent=type==='school'?'Confirmación · Colegio':'Confirmación · Invitado adulto';
-  $('#schoolFields').classList.toggle('hidden',type!=='school');
-  $('#adultFields').classList.toggle('hidden',type!=='adult');
-  $('#companionLabel').classList.add('hidden');
+  $('#guestType').value='guest';
+  $('#formTitle').textContent='Confirma tu asistencia';
   dialog.showModal();
 });
 const closeRsvp=$('#closeRsvp');
@@ -120,21 +112,12 @@ if(dialog){
 }
 applyConfirmedRsvp();
 
-const withCompanion=$('#withCompanion');
-if(withCompanion)withCompanion.onchange=e=>$('#companionLabel').classList.toggle('hidden',e.target.value!=='Sí');
-
 if(form)form.addEventListener('submit',async e=>{
   e.preventDefault();
-  const type=$('#guestType').value;
   const name=$('#guestName').value.trim();
   const attendance=$('#attendance').value;
-  const adultName=$('#adult1').value.trim();
-  const hasCompanion=$('#withCompanion').value;
-  const companionName=$('#companionName').value.trim();
 
   if(!name||!attendance){showToast('Completa tu nombre y asistencia');return}
-  if(attendance==='Sí'&&type==='school'&&!adultName){showToast('Escribe el nombre del adulto acompañante');return}
-  if(attendance==='Sí'&&type==='adult'&&hasCompanion==='Sí'&&!companionName){showToast('Escribe el nombre de tu acompañante');return}
 
   const submitBtn=form.querySelector('button[type="submit"]');
   submitBtn.disabled=true;
@@ -142,12 +125,8 @@ if(form)form.addEventListener('submit',async e=>{
 
   const data=new URLSearchParams();
   data.set(RSVP_FIELDS.name,name);
-  data.set(RSVP_FIELDS.type,type==='school'?'Compañero(a) del colegio':'Invitado adulto');
+  data.set(RSVP_FIELDS.type,'Invitado');
   data.set(RSVP_FIELDS.attendance,attendance);
-  data.set(RSVP_FIELDS.adultCount,attendance==='Sí'&&type==='school'?'1':'');
-  data.set(RSVP_FIELDS.adultName,attendance==='Sí'&&type==='school'?adultName:'');
-  data.set(RSVP_FIELDS.withCompanion,attendance==='Sí'&&type==='adult'?hasCompanion:'');
-  data.set(RSVP_FIELDS.companionName,attendance==='Sí'&&type==='adult'&&hasCompanion==='Sí'?companionName:'');
   data.set(RSVP_FIELDS.notes,$('#notes').value.trim());
 
   try{
