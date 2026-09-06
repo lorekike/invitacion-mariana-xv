@@ -85,6 +85,12 @@ footer.visible .footer-stars{animation:footerSparkle 1.8s ease-in-out infinite}
 
 /* Portada sin fotografía: conserva el diseño aprobado y centra el mensaje */
 body{background:radial-gradient(circle at 50% 0,#1a5596 0,#0a2d60 30%,#03122d 74%)}
+main{opacity:1;transform:none;transition:opacity .85s ease,transform 1s ease}
+body.entering main{opacity:0;transform:scale(.985)}
+.intro.opening .intro-card{animation:none;opacity:0;transform:scale(.9);transition:opacity .32s ease,transform .5s ease}
+.intro.opening .intro-orbit{opacity:0;transform:scale(1.45);transition:opacity .7s ease,transform 1.2s ease}
+body.entering .butterfly-field{z-index:52;opacity:1}
+body.entering .quick-nav,body.entering .reading-progress,body.entering .music-toggle{opacity:0!important;pointer-events:none!important}
 .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
 .hero-copy{text-align:center;max-width:760px;margin:auto}
 .hero-copy .poem{margin-inline:auto}

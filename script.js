@@ -11,6 +11,8 @@ function removeIntro(){
   setTimeout(()=>{
     intro.style.display='none';
     intro.remove();
+    document.body.classList.remove('entering');
+    document.body.classList.add('entered');
   },150);
 }
 
@@ -19,6 +21,7 @@ if(openBtn){
     e.preventDefault();
     e.stopPropagation();
     openBtn.disabled=true;
+    document.body.classList.add('entering');
     intro.classList.add('opening');
     site.setAttribute('aria-hidden','false');
     document.body.classList.remove('locked');
