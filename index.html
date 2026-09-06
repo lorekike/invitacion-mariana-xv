@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@300;400;500;600&family=Parisienne&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=confirmacion-9">
-<link rel="stylesheet" href="mobile.css?v=confirmacion-9">
+<link rel="stylesheet" href="styles.css?v=momentos-10">
+<link rel="stylesheet" href="mobile.css?v=momentos-10">
 </head>
 <body class="locked">
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -44,7 +44,6 @@
 <main id="site" aria-hidden="true">
   <section class="hero panel" id="inicio">
     <div class="moon"></div>
-    <div class="hero-frame reveal zoom"><div class="photo-aura"></div><img src="assets/portada.jpg" alt="Mariana Rojas Sierra" class="hero-photo"><div class="gold-frame"></div></div>
     <div class="hero-copy reveal up">
       <p class="kicker">Con inmensa alegría</p><p class="mis">Mis XV años</p><h2>Mariana</h2><p class="surname">Rojas Sierra</p>
       <div class="divider"><span></span>✧<span></span></div>
@@ -70,13 +69,16 @@
   <section class="gallery panel" id="galeria">
     <div class="section-head reveal rotate-left"><p class="kicker">Una historia en imágenes</p><h3>Momentos de Mariana</h3></div>
     <div class="carousel reveal rotate-right" id="carousel"><button class="nav prev" aria-label="Foto anterior">‹</button><div class="slides">
-      <figure class="slide active"><img src="assets/galeria-1.jpg" alt="Mariana sonriendo"><figcaption>Una sonrisa que ilumina cada momento</figcaption></figure>
-      <figure class="slide"><img src="assets/galeria-2.jpg" alt="Retrato de Mariana"><figcaption>Detalles que hacen única su historia</figcaption></figure>
-      <figure class="slide"><img src="assets/galeria-3.jpg" alt="Mariana en una celebración"><figcaption>Recuerdos llenos de alegría</figcaption></figure>
-      <figure class="slide"><img src="assets/galeria-4.jpg" alt="Mariana sentada"><figcaption>Quince años de sueños y amor</figcaption></figure>
+      <figure class="slide active"><img src="assets/momento-01.jpg" alt="Mariana en sus primeros años" loading="lazy"><figcaption>Una infancia llena de dulzura</figcaption></figure>
+      <figure class="slide"><img src="assets/momento-02.jpg" alt="Mariana sonriendo en sus primeros años" loading="lazy"><figcaption>Sonrisas que guardan historias</figcaption></figure>
+      <figure class="slide"><img src="assets/momento-03.jpg" alt="Mariana jugando" loading="lazy"><figcaption>Pequeños momentos, grandes recuerdos</figcaption></figure>
+      <figure class="slide"><img src="assets/momento-04.jpg" alt="Mariana vestida de princesa" loading="lazy"><figcaption>Soñando desde siempre</figcaption></figure>
+      <figure class="slide"><img src="assets/momento-05.jpg" alt="Mariana con vestido azul" loading="lazy"><figcaption>Creciendo entre sueños y alegría</figcaption></figure>
+      <figure class="slide"><img src="assets/momento-06.jpg" alt="Mariana vestida de Mujer Maravilla" loading="lazy"><figcaption>Una aventura en cada etapa</figcaption></figure>
+      <figure class="slide"><img src="assets/momento-07.jpg" alt="Mariana disfrutando un postre" loading="lazy"><figcaption>Recuerdos que brillan para siempre</figcaption></figure>
     </div><button class="nav next" aria-label="Foto siguiente">›</button><div class="dots"></div></div>
   </section>
-  <section class="gift panel reveal bloom"><div class="envelope"><div class="flap"></div><span>✦</span></div><p class="kicker">Tu presencia es mi mejor regalo</p><h3>Lluvia de sobres</h3><p>Lo más importante será compartir contigo esta noche inolvidable.</p></section>
+  <section class="gift panel reveal bloom"><div class="envelope"><div class="flap"></div><span>✦</span></div><p class="kicker">Tu presencia es mi mejor regalo</p><h3>Lluvia de sobres</h3></section>
   <section class="rsvp panel" id="rsvp">
     <div class="section-head reveal focus-in"><p class="kicker">Será un honor contar contigo</p><h3>Confirma tu asistencia</h3><p class="deadline">Antes del 15 de octubre de 2026</p></div>
     <div id="rsvpStatus" class="rsvp-status hidden" role="status"><span>✓</span><h4>Confirmación registrada</h4><p>Gracias. Tu respuesta ya fue guardada desde este dispositivo.</p></div><div class="rsvp-grid"><button class="guest-card reveal left" data-type="school"><span class="guest-icon">♙</span><b>Compañero(a) del colegio</b><small>Podrás asistir con 1 adulto</small><i>Confirmar →</i></button><button class="guest-card reveal right" data-type="adult"><span class="guest-icon">♢</span><b>Invitado adulto</b><small>Podrás asistir con un acompañante</small><i>Confirmar →</i></button></div>
@@ -84,5 +86,5 @@
   <footer class="panel reveal glow-in"><div class="footer-stars">✦　✧　✦</div><p>Será una noche inolvidable</p><span>Mariana Rojas Sierra · XV</span></footer>
 </main>
 <dialog id="rsvpDialog"><form method="dialog" id="rsvpForm" class="modal"><button type="button" id="closeRsvp" class="close" aria-label="Cerrar y volver a la invitación">×</button><p class="kicker">Confirmación de asistencia</p><h3 id="formTitle">Confirma tu asistencia</h3><input type="hidden" id="guestType"><label>Nombre completo<input id="guestName" required autocomplete="name" placeholder="Escribe tu nombre"></label><label>¿Asistirás?<select id="attendance" required><option value="">Selecciona una opción</option><option value="Sí">Sí, asistiré</option><option value="No">No podré asistir</option></select></label><div id="schoolFields" class="conditional hidden"><label>Adultos acompañantes<select id="adultCount"><option value="1">1 adulto</option></select></label><label>Nombre del adulto 1<input id="adult1"></label></div><div id="adultFields" class="conditional hidden"><label>¿Vendrás con acompañante?<select id="withCompanion"><option value="No">No</option><option value="Sí">Sí</option></select></label><label id="companionLabel" class="hidden">Nombre del acompañante<input id="companionName"></label></div><label>Observaciones alimentarias <small>(opcional)</small><textarea id="notes" rows="3" placeholder="Alergias o restricciones"></textarea></label><button type="submit" class="primary full">Guardar confirmación</button><p class="privacy">Tu respuesta quedará registrada en la lista de invitados.</p></form></dialog>
-<div id="toast" class="toast"></div><script src="script.js?v=confirmacion-9"></script>
+<div id="toast" class="toast"></div><script src="script.js?v=momentos-10"></script>
 </body></html>

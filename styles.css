@@ -82,6 +82,12 @@ footer.visible .footer-stars{animation:footerSparkle 1.8s ease-in-out infinite}
 
 /* Navegación rápida v5 */
 #inicio,#fecha,#celebracion,#galeria,#rsvp{scroll-margin-top:24px}
+
+/* Portada sin fotografía: conserva el diseño aprobado y centra el mensaje */
+.hero{grid-template-columns:1fr;justify-items:center;text-align:center}
+.hero-copy{text-align:center;max-width:760px;margin:auto}
+.hero-copy .poem{margin-inline:auto}
+.hero .moon{right:50%;transform:translateX(50%)}
 .reading-progress{position:fixed;z-index:45;top:0;left:0;width:100%;height:3px;background:rgba(255,255,255,.05);opacity:0;transition:opacity .5s}
 .reading-progress span{display:block;width:0;height:100%;background:linear-gradient(90deg,#8c5aa0,var(--gold2),#d9b35f);box-shadow:0 0 12px rgba(255,230,166,.65)}
 body:not(.locked) .reading-progress{opacity:1}
