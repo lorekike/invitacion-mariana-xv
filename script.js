@@ -167,30 +167,14 @@ function createButterflies(){
 createButterflies();
 
 
-// Navegación directa entre secciones y estado de lectura
-const quickNav=$('#quickNav'),progressBar=$('#readingProgress span');
-if(quickNav){
-  const navLinks=[...quickNav.querySelectorAll('a')];
-  navLinks.forEach(link=>link.addEventListener('click',e=>{
-    const target=$(link.getAttribute('href'));
-    if(!target)return;
-    e.preventDefault();
-    const mobileOffset=matchMedia('(max-width:600px)').matches?18:24;
-    const targetTop=target.getBoundingClientRect().top+scrollY-mobileOffset;
-    scrollTo({top:Math.max(0,targetTop),behavior:'smooth'});
-    history.replaceState(null,'',link.getAttribute('href'));
-  }));
-  const navObserver=new IntersectionObserver(entries=>{
-    const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
-    if(!visible)return;
-    navLinks.forEach(link=>link.classList.toggle('active',link.dataset.section===visible.target.id));
-  },{rootMargin:'-28% 0px -52% 0px',threshold:[0,.1,.3,.6]});
-  ['inicio','fecha','celebracion','galeria','rsvp'].forEach(id=>{const section=$('#'+id);if(section)navObserver.observe(section)});
-}
+// Guía de recorrido: invita a continuar sin saltarse secciones
+const progressBar=$('#readingProgress span'),discoverHint=$('#discoverHint');
+if(discoverHint)discoverHint.addEventListener('click',()=>$('#fecha')?.scrollIntoView({behavior:'smooth',block:'start'}));
 function updateReadingProgress(){
   if(!progressBar)return;
   const max=document.documentElement.scrollHeight-innerHeight;
   progressBar.style.width=(max>0?Math.min(100,Math.max(0,scrollY/max*100)):0)+'%';
+  if(discoverHint)discoverHint.classList.toggle('gone',scrollY>80);
 }
 addEventListener('scroll',updateReadingProgress,{passive:true});
 addEventListener('resize',updateReadingProgress);
