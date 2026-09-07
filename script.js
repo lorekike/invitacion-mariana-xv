@@ -73,7 +73,7 @@ function go(n){slides[current].classList.remove('active');dots.children[current]
 const prev=$('.prev'),next=$('.next');if(prev)prev.onclick=()=>go(current-1);if(next)next.onclick=()=>go(current+1);go(0)}
 
 // Calendario ICS
-const calendarBtn=$('#calendarBtn');if(calendarBtn)calendarBtn.addEventListener('click',()=>{const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//XV Mariana//ES\r\nBEGIN:VEVENT\r\nUID:mariana-xv-20261115@example.com\r\nDTSTAMP:20260714T190000Z\r\nDTSTART:20261116T010000Z\r\nDTEND:20261116T060000Z\r\nSUMMARY:XV años de Mariana Rojas Sierra\r\nLOCATION:Orquideorama, Av. 2 Norte # 48-10\r\nDESCRIPTION:Celebración de los XV años de Mariana. Código de vestuario: semi formal.\r\nEND:VEVENT\r\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='XV-Mariana-Rojas-Sierra.ics';a.click();URL.revokeObjectURL(a.href)});
+const calendarBtn=$('#calendarBtn');if(calendarBtn)calendarBtn.addEventListener('click',()=>{const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//XV Mariana//ES\r\nBEGIN:VEVENT\r\nUID:mariana-xv-20261115@example.com\r\nDTSTAMP:20260714T190000Z\r\nDTSTART:20261116T010000Z\r\nDTEND:20261116T060000Z\r\nSUMMARY:XV años de Mariana Rojas Sierra\r\nLOCATION:Orquideorama, Av. 2 Norte # 48-10\r\nDESCRIPTION:Celebración de los XV años de Mariana. Código de vestuario: formal. El color azul está reservado para Mariana.\r\nEND:VEVENT\r\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='XV-Mariana-Rojas-Sierra.ics';a.click();URL.revokeObjectURL(a.href)});
 
 // RSVP · registro consolidado en Google Forms / Sheets
 const dialog=$('#rsvpDialog'),form=$('#rsvpForm');
@@ -91,14 +91,29 @@ const RSVP_FIELDS={
   name:'entry.83220831',
   type:'entry.1410360293',
   attendance:'entry.69481772',
+  withCompanion:'entry.1398819219',
+  companionName:'entry.1093298662',
   notes:'entry.1088589983'
 };
 $$('.guest-card').forEach(b=>b.onclick=()=>{
   if(hasConfirmedRsvp()){applyConfirmedRsvp();showToast('Este dispositivo ya registró una confirmación');return}
   form.reset();
+  $('#companionFields').classList.add('hidden');
+  $('#companionLabel').classList.add('hidden');
   $('#guestType').value='guest';
   $('#formTitle').textContent='Confirma tu asistencia';
   dialog.showModal();
+});
+const attendanceSelect=$('#attendance'),withCompanion=$('#withCompanion');
+if(attendanceSelect)attendanceSelect.addEventListener('change',e=>{
+  const attending=e.target.value==='Sí';
+  $('#companionFields').classList.toggle('hidden',!attending);
+  if(!attending){withCompanion.value='No';$('#companionName').value='';$('#companionLabel').classList.add('hidden')}
+});
+if(withCompanion)withCompanion.addEventListener('change',e=>{
+  const bringing=e.target.value==='Sí';
+  $('#companionLabel').classList.toggle('hidden',!bringing);
+  if(!bringing)$('#companionName').value='';
 });
 const closeRsvp=$('#closeRsvp');
 if(closeRsvp)closeRsvp.addEventListener('click',()=>dialog.close());
@@ -108,7 +123,7 @@ if(dialog){
     const outside=e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom;
     if(outside)dialog.close();
   });
-  dialog.addEventListener('close',()=>form.reset());
+  dialog.addEventListener('close',()=>{form.reset();$('#companionFields').classList.add('hidden');$('#companionLabel').classList.add('hidden')});
 }
 applyConfirmedRsvp();
 
@@ -116,8 +131,11 @@ if(form)form.addEventListener('submit',async e=>{
   e.preventDefault();
   const name=$('#guestName').value.trim();
   const attendance=$('#attendance').value;
+  const hasCompanion=attendance==='Sí'?$('#withCompanion').value:'No';
+  const companionName=$('#companionName').value.trim();
 
   if(!name||!attendance){showToast('Completa tu nombre y asistencia');return}
+  if(hasCompanion==='Sí'&&!companionName){showToast('Escribe el nombre de tu acompañante');return}
 
   const submitBtn=form.querySelector('button[type="submit"]');
   submitBtn.disabled=true;
@@ -127,6 +145,8 @@ if(form)form.addEventListener('submit',async e=>{
   data.set(RSVP_FIELDS.name,name);
   data.set(RSVP_FIELDS.type,'Invitado');
   data.set(RSVP_FIELDS.attendance,attendance);
+  data.set(RSVP_FIELDS.withCompanion,hasCompanion);
+  data.set(RSVP_FIELDS.companionName,hasCompanion==='Sí'?companionName:'');
   data.set(RSVP_FIELDS.notes,$('#notes').value.trim());
 
   try{
