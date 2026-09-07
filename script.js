@@ -175,7 +175,9 @@ if(quickNav){
     const target=$(link.getAttribute('href'));
     if(!target)return;
     e.preventDefault();
-    target.scrollIntoView({behavior:'smooth',block:'start'});
+    const mobileOffset=matchMedia('(max-width:600px)').matches?18:24;
+    const targetTop=target.getBoundingClientRect().top+scrollY-mobileOffset;
+    scrollTo({top:Math.max(0,targetTop),behavior:'smooth'});
     history.replaceState(null,'',link.getAttribute('href'));
   }));
   const navObserver=new IntersectionObserver(entries=>{

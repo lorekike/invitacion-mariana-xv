@@ -111,6 +111,7 @@ body.entering .quick-nav,body.entering .reading-progress,body.entering .music-to
 .dress-note-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--night);font-size:1.1rem;box-shadow:0 0 20px rgba(255,230,166,.28)}
 .dress-note strong{display:block;margin-bottom:.3rem;color:var(--gold2);font:600 .67rem Montserrat,sans-serif;letter-spacing:.18em;text-transform:uppercase}
 .dress-note p{margin:0;color:#fff;font:500 1.18rem/1.35 'Cormorant Garamond',serif}
+.event>.dress-note{margin-top:1.25rem;margin-bottom:1.8rem}
 .slide{background:#020817;isolation:isolate}
 .slide:before{content:"";position:absolute;z-index:0;inset:-28px;background-image:linear-gradient(rgba(2,8,23,.36),rgba(2,8,23,.5)),var(--photo);background-size:cover;background-position:center;filter:blur(20px) saturate(.75);transform:scale(1.12);opacity:.78}
 .slide img{position:relative;z-index:1;object-fit:contain!important;object-position:center!important}
