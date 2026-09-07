@@ -75,29 +75,53 @@ const prev=$('.prev'),next=$('.next');if(prev)prev.onclick=()=>go(current-1);if(
 // Calendario ICS
 const calendarBtn=$('#calendarBtn');if(calendarBtn)calendarBtn.addEventListener('click',()=>{const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//XV Mariana//ES\r\nBEGIN:VEVENT\r\nUID:mariana-xv-20261115@example.com\r\nDTSTAMP:20260714T190000Z\r\nDTSTART:20261116T010000Z\r\nDTEND:20261116T060000Z\r\nSUMMARY:XV años de Mariana Rojas Sierra\r\nLOCATION:Orquideorama, Av. 2 Norte # 48-10\r\nDESCRIPTION:Celebración de los XV años de Mariana. Código de vestuario: formal. El color azul está reservado para Mariana.\r\nEND:VEVENT\r\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='XV-Mariana-Rojas-Sierra.ics';a.click();URL.revokeObjectURL(a.href)});
 
-// RSVP · registro consolidado en Google Forms / Sheets
+// RSVP · invitaciones personalizadas conectadas a Google Sheets
 const dialog=$('#rsvpDialog'),form=$('#rsvpForm');
-const RSVP_ENDPOINT='https://docs.google.com/forms/d/e/1FAIpQLScfSxFHk8G92dlHLKmUX5wnGdX1W9Co98g5MnIZUhyBuG2t5A/formResponse';
-const RSVP_STORAGE_KEY='mariana-xv-rsvp-confirmed-v1';
-function hasConfirmedRsvp(){try{return localStorage.getItem(RSVP_STORAGE_KEY)==='yes'}catch(e){return false}}
-function markConfirmedRsvp(){try{localStorage.setItem(RSVP_STORAGE_KEY,'yes')}catch(e){}}
-function applyConfirmedRsvp(){
-  const confirmed=hasConfirmedRsvp(),grid=$('.rsvp-grid'),status=$('#rsvpStatus');
+const RSVP_ENDPOINT='https://script.google.com/macros/s/AKfycbw7bYC5jK80zwaZ-mzhChuQFFzfadps6_RI4adCTAc9c5VjE7JOZLETmu27dMsVmHBkpQ/exec';
+const invitationToken=new URLSearchParams(location.search).get('i')||'';
+let invitation=null;
+function setRsvpView(confirmed,text){
+  const grid=$('.rsvp-grid'),status=$('#rsvpStatus');
   if(grid)grid.classList.toggle('hidden',confirmed);
   if(status)status.classList.toggle('hidden',!confirmed);
+  if(text&&$('#rsvpStatusText'))$('#rsvpStatusText').textContent=text;
   if(confirmed&&dialog?.open)dialog.close();
 }
-const RSVP_FIELDS={
-  name:'entry.83220831',
-  type:'entry.1410360293',
-  attendance:'entry.69481772',
-  companionCount:'entry.150819483'
-};
+function fillCompanionOptions(max){
+  const select=$('#companionCount');select.innerHTML='';
+  for(let n=0;n<=max;n++){
+    const option=document.createElement('option');option.value=String(n);
+    option.textContent=n===0?'0 · Asistiré solo(a)':n===1?'1 acompañante':`${n} acompañantes`;
+    select.appendChild(option);
+  }
+  $('#companionNote').textContent=max===0?'Esta invitación es para una persona.':`Tu invitación permite hasta ${max} ${max===1?'acompañante':'acompañantes'}; puedes asistir solo(a) o elegir una cantidad menor.`;
+}
+async function loadInvitation(){
+  const card=$('.guest-card');
+  if(!invitationToken){card.disabled=true;return}
+  card.disabled=true;$('#rsvpCardText').textContent='Consultando tu invitación…';
+  try{
+    const response=await fetch(`${RSVP_ENDPOINT}?i=${encodeURIComponent(invitationToken)}`,{cache:'no-store'});
+    const result=await response.json();
+    if(!result.ok)throw new Error(result.error||'Invitación no encontrada');
+    invitation=result;$('#guestName').value=result.name;fillCompanionOptions(result.maxCompanions);
+    if(result.confirmed){
+      const detail=result.attendance==='Sí'?`Confirmaste tu asistencia con ${result.companionCount} ${result.companionCount===1?'acompañante':'acompañantes'}.`:'Registraste que no podrás asistir.';
+      setRsvpView(true,`${result.name}, ${detail}`);
+    }else{
+      card.disabled=false;$('#rsvpCardText').textContent=`Invitación para ${result.name}`;
+    }
+  }catch(err){
+    $('#rsvpCardText').textContent='No pudimos validar este enlace. Solicita nuevamente tu invitación personal.';
+    showToast('No fue posible validar la invitación');
+  }
+}
 $$('.guest-card').forEach(b=>b.onclick=()=>{
-  if(hasConfirmedRsvp()){applyConfirmedRsvp();showToast('Este dispositivo ya registró una confirmación');return}
+  if(!invitation){showToast(invitationToken?'Espera mientras validamos tu invitación':'Abre el enlace personal que recibiste');return}
+  if(invitation.confirmed){setRsvpView(true);showToast('Esta invitación ya fue confirmada');return}
   form.reset();
+  $('#guestName').value=invitation.name;fillCompanionOptions(invitation.maxCompanions);
   $('#companionFields').classList.add('hidden');
-  $('#guestType').value='guest';
   $('#formTitle').textContent='Confirma tu asistencia';
   dialog.showModal();
 });
@@ -117,35 +141,34 @@ if(dialog){
   });
   dialog.addEventListener('close',()=>{form.reset();$('#companionFields').classList.add('hidden')});
 }
-applyConfirmedRsvp();
+loadInvitation();
 
 if(form)form.addEventListener('submit',async e=>{
   e.preventDefault();
-  const name=$('#guestName').value.trim();
   const attendance=$('#attendance').value;
-  const companionCount=attendance==='Sí'?$('#companionCount').value:'0';
+  const companionCount=attendance==='Sí'?Number($('#companionCount').value):0;
 
-  if(!name||!attendance){showToast('Completa tu nombre y asistencia');return}
+  if(!invitation||!attendance){showToast('Selecciona si asistirás');return}
+  if(companionCount>invitation.maxCompanions){showToast('La cantidad supera el cupo autorizado');return}
 
   const submitBtn=form.querySelector('button[type="submit"]');
   submitBtn.disabled=true;
   submitBtn.textContent='Guardando…';
 
-  const data=new URLSearchParams();
-  data.set(RSVP_FIELDS.name,name);
-  data.set(RSVP_FIELDS.type,'Invitado');
-  data.set(RSVP_FIELDS.attendance,attendance);
-  data.set(RSVP_FIELDS.companionCount,companionCount);
+  const data=new URLSearchParams({i:invitationToken,attendance,companionCount:String(companionCount)});
 
   try{
-    await fetch(RSVP_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()});
-    markConfirmedRsvp();
+    const response=await fetch(RSVP_ENDPOINT,{method:'POST',body:data});
+    const result=await response.json();
+    if(!result.ok)throw new Error(result.error||'No fue posible guardar');
+    invitation={...invitation,confirmed:true,attendance:result.attendance,companionCount:result.companionCount};
     dialog.close();
     form.reset();
-    applyConfirmedRsvp();
+    const detail=attendance==='Sí'?`Confirmaste tu asistencia con ${companionCount} ${companionCount===1?'acompañante':'acompañantes'}.`:'Registraste que no podrás asistir.';
+    setRsvpView(true,`${invitation.name}, ${detail}`);
     showToast('¡Confirmación guardada! Gracias por responder');
   }catch(err){
-    showToast('No pudimos guardar. Revisa tu conexión e inténtalo de nuevo');
+    showToast(err.message||'No pudimos guardar. Inténtalo de nuevo');
   }finally{
     submitBtn.disabled=false;
     submitBtn.textContent='Guardar confirmación';
