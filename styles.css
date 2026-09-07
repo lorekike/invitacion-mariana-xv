@@ -115,6 +115,7 @@ body.entering .reading-progress,body.entering .music-toggle{opacity:0!important;
 .discover-hint{position:absolute;z-index:5;left:50%;bottom:24px;display:flex;flex-direction:column;align-items:center;gap:.15rem;transform:translateX(-50%);padding:.55rem 1rem;color:var(--gold2);background:rgba(2,8,23,.62);border:1px solid rgba(255,230,166,.22);border-radius:999px;cursor:pointer;font:500 .62rem Cinzel,serif;letter-spacing:.13em;text-transform:uppercase;backdrop-filter:blur(10px);transition:opacity .4s,transform .4s}
 .discover-hint b{font:400 1.4rem/1 serif;animation:discoverBounce 1.35s ease-in-out infinite}
 .discover-hint.gone{opacity:0;pointer-events:none;transform:translate(-50%,14px)}
+.field-note{margin:-.35rem 0 1rem;color:var(--muted);font:400 .92rem/1.4 'Cormorant Garamond',serif}
 @keyframes discoverBounce{0%,100%{transform:translateY(-2px)}50%{transform:translateY(5px)}}
 @media(max-width:600px){.hero{padding-bottom:7.5rem}.discover-hint{bottom:20px;font-size:.56rem}}
 .slide{background:#020817;isolation:isolate}

@@ -91,29 +91,21 @@ const RSVP_FIELDS={
   name:'entry.83220831',
   type:'entry.1410360293',
   attendance:'entry.69481772',
-  withCompanion:'entry.1398819219',
-  companionName:'entry.1093298662',
-  notes:'entry.1088589983'
+  companionCount:'entry.150819483'
 };
 $$('.guest-card').forEach(b=>b.onclick=()=>{
   if(hasConfirmedRsvp()){applyConfirmedRsvp();showToast('Este dispositivo ya registró una confirmación');return}
   form.reset();
   $('#companionFields').classList.add('hidden');
-  $('#companionLabel').classList.add('hidden');
   $('#guestType').value='guest';
   $('#formTitle').textContent='Confirma tu asistencia';
   dialog.showModal();
 });
-const attendanceSelect=$('#attendance'),withCompanion=$('#withCompanion');
+const attendanceSelect=$('#attendance');
 if(attendanceSelect)attendanceSelect.addEventListener('change',e=>{
   const attending=e.target.value==='Sí';
   $('#companionFields').classList.toggle('hidden',!attending);
-  if(!attending){withCompanion.value='No';$('#companionName').value='';$('#companionLabel').classList.add('hidden')}
-});
-if(withCompanion)withCompanion.addEventListener('change',e=>{
-  const bringing=e.target.value==='Sí';
-  $('#companionLabel').classList.toggle('hidden',!bringing);
-  if(!bringing)$('#companionName').value='';
+  if(!attending)$('#companionCount').value='0';
 });
 const closeRsvp=$('#closeRsvp');
 if(closeRsvp)closeRsvp.addEventListener('click',()=>dialog.close());
@@ -123,7 +115,7 @@ if(dialog){
     const outside=e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom;
     if(outside)dialog.close();
   });
-  dialog.addEventListener('close',()=>{form.reset();$('#companionFields').classList.add('hidden');$('#companionLabel').classList.add('hidden')});
+  dialog.addEventListener('close',()=>{form.reset();$('#companionFields').classList.add('hidden')});
 }
 applyConfirmedRsvp();
 
@@ -131,11 +123,9 @@ if(form)form.addEventListener('submit',async e=>{
   e.preventDefault();
   const name=$('#guestName').value.trim();
   const attendance=$('#attendance').value;
-  const hasCompanion=attendance==='Sí'?$('#withCompanion').value:'No';
-  const companionName=$('#companionName').value.trim();
+  const companionCount=attendance==='Sí'?$('#companionCount').value:'0';
 
   if(!name||!attendance){showToast('Completa tu nombre y asistencia');return}
-  if(hasCompanion==='Sí'&&!companionName){showToast('Escribe el nombre de tu acompañante');return}
 
   const submitBtn=form.querySelector('button[type="submit"]');
   submitBtn.disabled=true;
@@ -145,9 +135,7 @@ if(form)form.addEventListener('submit',async e=>{
   data.set(RSVP_FIELDS.name,name);
   data.set(RSVP_FIELDS.type,'Invitado');
   data.set(RSVP_FIELDS.attendance,attendance);
-  data.set(RSVP_FIELDS.withCompanion,hasCompanion);
-  data.set(RSVP_FIELDS.companionName,hasCompanion==='Sí'?companionName:'');
-  data.set(RSVP_FIELDS.notes,$('#notes').value.trim());
+  data.set(RSVP_FIELDS.companionCount,companionCount);
 
   try{
     await fetch(RSVP_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()});
