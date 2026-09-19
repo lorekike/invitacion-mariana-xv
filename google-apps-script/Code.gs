@@ -111,6 +111,7 @@ function actualizarResumen_() {
   const rows = lastRow < 2 ? [] : source.getRange(2, 1, lastRow - 1, source.getLastColumn()).getValues();
 
   let registered = 0;
+  let authorizedCompanions = 0;
   let responses = 0;
   let attending = 0;
   let notAttending = 0;
@@ -119,6 +120,7 @@ function actualizarResumen_() {
   rows.forEach(function(row) {
     if (!String(row[columns.name - 1] || '').trim()) return;
     registered++;
+    authorizedCompanions += Math.max(0, Math.min(5, Number(row[columns.allowed - 1]) || 0));
     const confirmed = String(row[columns.confirmed - 1] || '').trim().toLowerCase() === 'sí';
     const attendance = String(row[columns.attendance - 1] || '').trim();
     if (confirmed) responses++;
@@ -135,22 +137,25 @@ function actualizarResumen_() {
   if (!summary) summary = spreadsheet.insertSheet(SUMMARY_SHEET_NAME, 0);
   summary.clear();
   summary.getRange('A1:B1').merge().setValue('Resumen de confirmaciones');
-  summary.getRange('A3:B9').setValues([
+  summary.getRange('A3:B12').setValues([
     ['Indicador', 'Cantidad'],
-    ['Invitados registrados', registered],
+    ['Invitados principales registrados', registered],
+    ['Acompañantes autorizados', authorizedCompanions],
+    ['Total de personas invitadas', registered + authorizedCompanions],
     ['Confirmaciones recibidas', responses],
     ['Invitados que asistirán', attending],
-    ['Invitados que no asistirán', notAttending],
     ['Acompañantes confirmados', companions],
-    ['Total de personas que asistirán', attending + companions]
+    ['Total de personas que asistirán', attending + companions],
+    ['Invitados que no asistirán', notAttending],
+    ['Invitados sin responder', Math.max(0, registered - responses)]
   ]);
-  summary.getRange('A11:B11').setValues([['Invitados sin responder', Math.max(0, registered - responses)]]);
   summary.getRange('A1:B1').setBackground('#07162f').setFontColor('#f4d98b').setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
   summary.getRange('A3:B3').setBackground('#173f75').setFontColor('#ffffff').setFontWeight('bold');
-  summary.getRange('A4:A11').setFontWeight('bold');
-  summary.getRange('B4:B11').setNumberFormat('0').setHorizontalAlignment('center');
-  summary.getRange('A9:B9').setBackground('#f4d98b').setFontColor('#07162f').setFontWeight('bold');
-  summary.getRange('A11:B11').setBackground('#e8eef7');
+  summary.getRange('A4:A12').setFontWeight('bold');
+  summary.getRange('B4:B12').setNumberFormat('0').setHorizontalAlignment('center');
+  summary.getRange('A6:B6').setBackground('#e8eef7').setFontColor('#07162f').setFontWeight('bold');
+  summary.getRange('A10:B10').setBackground('#f4d98b').setFontColor('#07162f').setFontWeight('bold');
+  summary.getRange('A12:B12').setBackground('#e8eef7');
   summary.setColumnWidth(1, 260);
   summary.setColumnWidth(2, 110);
   summary.setFrozenRows(3);
