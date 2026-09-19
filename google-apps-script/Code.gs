@@ -1,4 +1,5 @@
 const SHEET_NAME = 'Respuestas de formulario 1';
+const SUMMARY_SHEET_NAME = 'Resumen';
 const INVITATION_BASE_URL = 'https://xvmarianarojas.com/';
 
 const HEADERS = {
@@ -67,6 +68,7 @@ function doPost(e) {
     sheet.getRange(record.row, columns.companionCount).setValue(count);
     sheet.getRange(record.row, columns.companionNames).setValue(attendance === 'Sí' ? companionNames.join('\n') : '');
     sheet.getRange(record.row, columns.confirmedAt).setValue(new Date());
+    actualizarResumen_();
     SpreadsheetApp.flush();
 
     return json_({ok: true, name: record.name, attendance: attendance, companionCount: count});
@@ -94,7 +96,64 @@ function prepararInvitaciones() {
     sheet.getRange(sheetRow, columns.link).setValue(INVITATION_BASE_URL + '?i=' + token);
   });
   sheet.autoResizeColumns(1, sheet.getLastColumn());
+  actualizarResumen_();
   SpreadsheetApp.flush();
+}
+
+function actualizarResumen() {
+  actualizarResumen_();
+}
+
+function actualizarResumen_() {
+  const source = getSheet_();
+  const columns = ensureColumns_(source);
+  const lastRow = source.getLastRow();
+  const rows = lastRow < 2 ? [] : source.getRange(2, 1, lastRow - 1, source.getLastColumn()).getValues();
+
+  let registered = 0;
+  let responses = 0;
+  let attending = 0;
+  let notAttending = 0;
+  let companions = 0;
+
+  rows.forEach(function(row) {
+    if (!String(row[columns.name - 1] || '').trim()) return;
+    registered++;
+    const confirmed = String(row[columns.confirmed - 1] || '').trim().toLowerCase() === 'sí';
+    const attendance = String(row[columns.attendance - 1] || '').trim();
+    if (confirmed) responses++;
+    if (attendance === 'Sí') {
+      attending++;
+      companions += Math.max(0, Number(row[columns.companionCount - 1]) || 0);
+    } else if (attendance === 'No') {
+      notAttending++;
+    }
+  });
+
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let summary = spreadsheet.getSheetByName(SUMMARY_SHEET_NAME);
+  if (!summary) summary = spreadsheet.insertSheet(SUMMARY_SHEET_NAME, 0);
+  summary.clear();
+  summary.getRange('A1:B1').merge().setValue('Resumen de confirmaciones');
+  summary.getRange('A3:B9').setValues([
+    ['Indicador', 'Cantidad'],
+    ['Invitados registrados', registered],
+    ['Confirmaciones recibidas', responses],
+    ['Invitados que asistirán', attending],
+    ['Invitados que no asistirán', notAttending],
+    ['Acompañantes confirmados', companions],
+    ['Total de personas que asistirán', attending + companions]
+  ]);
+  summary.getRange('A11:B11').setValues([['Invitados sin responder', Math.max(0, registered - responses)]]);
+  summary.getRange('A1:B1').setBackground('#07162f').setFontColor('#f4d98b').setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
+  summary.getRange('A3:B3').setBackground('#173f75').setFontColor('#ffffff').setFontWeight('bold');
+  summary.getRange('A4:A11').setFontWeight('bold');
+  summary.getRange('B4:B11').setNumberFormat('0').setHorizontalAlignment('center');
+  summary.getRange('A9:B9').setBackground('#f4d98b').setFontColor('#07162f').setFontWeight('bold');
+  summary.getRange('A11:B11').setBackground('#e8eef7');
+  summary.setColumnWidth(1, 260);
+  summary.setColumnWidth(2, 110);
+  summary.setFrozenRows(3);
 }
 
 function findInvitation_(token) {
