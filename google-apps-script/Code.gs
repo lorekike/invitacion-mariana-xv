@@ -114,6 +114,8 @@ function actualizarResumen_() {
   const source = getSheet_();
   const columns = ensureColumns_(source);
   const lastRow = source.getLastRow();
+  const headers = source.getRange(1, 1, 1, source.getLastColumn()).getValues()[0];
+  const legacyInvitedByColumn = headers.indexOf('Invitado por') + 1;
   const rows = lastRow < 2 ? [] : source.getRange(2, 1, lastRow - 1, source.getLastColumn()).getValues();
 
   let registered = 0;
@@ -129,7 +131,9 @@ function actualizarResumen_() {
     registered++;
     const allowed = Math.max(0, Math.min(5, Number(row[columns.allowed - 1]) || 0));
     authorizedCompanions += allowed;
-    const invitedBy = String(row[columns.invitedBy - 1] || '').trim() || 'Sin asignar';
+    const invitedBy = String(row[columns.invitedBy - 1] || '').trim() ||
+      (legacyInvitedByColumn ? String(row[legacyInvitedByColumn - 1] || '').trim() : '') ||
+      'Sin asignar';
     if (!groups[invitedBy]) groups[invitedBy] = {guests: 0, companions: 0};
     groups[invitedBy].guests++;
     groups[invitedBy].companions += allowed;
