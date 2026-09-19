@@ -105,6 +105,11 @@ function actualizarResumen() {
   actualizarResumen_();
 }
 
+function onEdit(e) {
+  if (!e || !e.range || e.range.getSheet().getName() !== SHEET_NAME) return;
+  actualizarResumen_();
+}
+
 function actualizarResumen_() {
   const source = getSheet_();
   const columns = ensureColumns_(source);
