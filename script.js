@@ -95,6 +95,15 @@ function fillCompanionOptions(max){
     select.appendChild(option);
   }
   $('#companionNote').textContent=max===0?'Esta invitación es para una persona.':`Tu invitación permite hasta ${max} ${max===1?'acompañante':'acompañantes'}; puedes asistir solo(a) o elegir una cantidad menor.`;
+  renderCompanionNames(0);
+}
+function renderCompanionNames(count){
+  const container=$('#companionNames');container.innerHTML='';
+  for(let n=1;n<=count;n++){
+    const label=document.createElement('label');label.textContent=`Nombre del acompañante ${n}`;
+    const input=document.createElement('input');input.type='text';input.className='companion-name';input.required=true;input.autocomplete='name';input.maxLength=100;input.placeholder='Nombre completo';
+    label.appendChild(input);container.appendChild(label);
+  }
 }
 async function loadInvitation(){
   const card=$('.guest-card');
@@ -130,7 +139,10 @@ if(attendanceSelect)attendanceSelect.addEventListener('change',e=>{
   const attending=e.target.value==='Sí';
   $('#companionFields').classList.toggle('hidden',!attending);
   if(!attending)$('#companionCount').value='0';
+  renderCompanionNames(attending?Number($('#companionCount').value):0);
 });
+const companionSelect=$('#companionCount');
+if(companionSelect)companionSelect.addEventListener('change',e=>renderCompanionNames(Number(e.target.value)));
 const closeRsvp=$('#closeRsvp');
 if(closeRsvp)closeRsvp.addEventListener('click',()=>dialog.close());
 if(dialog){
@@ -147,15 +159,17 @@ if(form)form.addEventListener('submit',async e=>{
   e.preventDefault();
   const attendance=$('#attendance').value;
   const companionCount=attendance==='Sí'?Number($('#companionCount').value):0;
+  const companionNames=attendance==='Sí'?$$('.companion-name').map(input=>input.value.trim()):[];
 
   if(!invitation||!attendance){showToast('Selecciona si asistirás');return}
   if(companionCount>invitation.maxCompanions){showToast('La cantidad supera el cupo autorizado');return}
+  if(companionNames.length!==companionCount||companionNames.some(name=>!name)){showToast('Escribe el nombre de cada acompañante');return}
 
   const submitBtn=form.querySelector('button[type="submit"]');
   submitBtn.disabled=true;
   submitBtn.textContent='Guardando…';
 
-  const data=new URLSearchParams({i:invitationToken,attendance,companionCount:String(companionCount)});
+  const data=new URLSearchParams({i:invitationToken,attendance,companionCount:String(companionCount),companionNames:JSON.stringify(companionNames)});
 
   try{
     const response=await fetch(RSVP_ENDPOINT,{method:'POST',body:data});

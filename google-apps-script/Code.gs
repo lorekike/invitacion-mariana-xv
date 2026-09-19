@@ -10,6 +10,7 @@ const HEADERS = {
   confirmed: 'Confirmado',
   attendance: 'Asistencia confirmada',
   companionCount: 'Acompañantes confirmados',
+  companionNames: 'Nombres de acompañantes',
   confirmedAt: 'Fecha de confirmación'
 };
 
@@ -41,6 +42,9 @@ function doPost(e) {
     const token = cleanToken_(e.parameter.i);
     const attendance = e.parameter.attendance === 'Sí' ? 'Sí' : e.parameter.attendance === 'No' ? 'No' : '';
     const companionCount = Number(e.parameter.companionCount || 0);
+    let companionNames = [];
+    try { companionNames = JSON.parse(e.parameter.companionNames || '[]'); } catch (ignore) {}
+    companionNames = Array.isArray(companionNames) ? companionNames.map(function(name) { return String(name || '').trim(); }) : [];
     if (!token || !attendance || !Number.isInteger(companionCount)) {
       return json_({ok: false, error: 'Datos de confirmación incompletos'});
     }
@@ -51,6 +55,9 @@ function doPost(e) {
     if (companionCount < 0 || companionCount > record.maxCompanions) {
       return json_({ok: false, error: 'La cantidad supera el cupo autorizado'});
     }
+    if (attendance === 'Sí' && (companionNames.length !== companionCount || companionNames.some(function(name) { return !name; }))) {
+      return json_({ok: false, error: 'Debes registrar el nombre de cada acompañante'});
+    }
 
     const count = attendance === 'Sí' ? companionCount : 0;
     const sheet = getSheet_();
@@ -58,6 +65,7 @@ function doPost(e) {
     sheet.getRange(record.row, columns.confirmed).setValue('Sí');
     sheet.getRange(record.row, columns.attendance).setValue(attendance);
     sheet.getRange(record.row, columns.companionCount).setValue(count);
+    sheet.getRange(record.row, columns.companionNames).setValue(attendance === 'Sí' ? companionNames.join('\n') : '');
     sheet.getRange(record.row, columns.confirmedAt).setValue(new Date());
     SpreadsheetApp.flush();
 
