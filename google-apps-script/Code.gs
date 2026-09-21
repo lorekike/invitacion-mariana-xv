@@ -250,22 +250,29 @@ function actualizarCupoFormulario_() {
 
   form.setAcceptingResponses(true);
   const maxAcompanantes = Math.min(5, Math.max(0, disponibles - 1));
-  const item = form.getItems(FormApp.ItemType.TEXT).map(function(formItem) {
-    return formItem.asTextItem();
-  }).find(function(textItem) {
-    return textItem.getTitle().trim().toLowerCase() === HEADERS.allowed.toLowerCase();
+  const item = form.getItems().find(function(formItem) {
+    return formItem.getTitle().trim().toLowerCase() === HEADERS.allowed.toLowerCase();
   });
   if (!item) throw new Error('No se encontró la pregunta de cantidad de acompañantes');
 
-  const validationBuilder = FormApp.createTextValidation()
-    .setHelpText('Cupo disponible: ' + disponibles + ' persona(s). Puedes registrar entre 0 y ' + maxAcompanantes + ' acompañante(s).');
-  if (maxAcompanantes === 0) {
-    validationBuilder.requireNumberEqualTo(0);
+  const helpText = 'Cupo disponible: ' + disponibles + ' persona(s). Máximo ' + maxAcompanantes + ' acompañante(s) para este registro.';
+  const options = [];
+  for (let value = 0; value <= maxAcompanantes; value++) options.push(String(value));
+  if (item.getType() === FormApp.ItemType.MULTIPLE_CHOICE) {
+    item.asMultipleChoiceItem().setChoiceValues(options).setHelpText(helpText).setRequired(true);
+  } else if (item.getType() === FormApp.ItemType.LIST) {
+    item.asListItem().setChoiceValues(options).setHelpText(helpText).setRequired(true);
+  } else if (item.getType() === FormApp.ItemType.TEXT) {
+    const validationBuilder = FormApp.createTextValidation().setHelpText(helpText);
+    if (maxAcompanantes === 0) {
+      validationBuilder.requireNumberEqualTo(0);
+    } else {
+      validationBuilder.requireNumberBetween(0, maxAcompanantes);
+    }
+    item.asTextItem().setValidation(validationBuilder.build()).setHelpText(helpText).setRequired(true);
   } else {
-    validationBuilder.requireNumberBetween(0, maxAcompanantes);
+    throw new Error('El tipo de pregunta de acompañantes no es compatible');
   }
-  item.setValidation(validationBuilder.build());
-  item.setHelpText('Cupo disponible: ' + disponibles + ' persona(s). Máximo ' + maxAcompanantes + ' acompañante(s) para este registro.');
 }
 
 function calcularTotalInvitados_() {
