@@ -1,10 +1,11 @@
 const SHEET_NAME = 'Respuestas de formulario 1';
 const SUMMARY_SHEET_NAME = 'Resumen';
 const INVITATION_BASE_URL = 'https://xvmarianarojas.com/';
+const MAX_TOTAL_INVITADOS = 180;
 
 const HEADERS = {
   name: 'Nombre completo del invitado',
-  invitedBy: 'Invitado de',
+  invitedBy: 'Invitado por',
   phone: 'Celular del invitado',
   allowed: 'Cantidad de acompañantes',
   token: 'ID Invitación',
@@ -108,14 +109,24 @@ function actualizarResumen() {
 function onEdit(e) {
   if (!e || !e.range || e.range.getSheet().getName() !== SHEET_NAME) return;
   actualizarResumen_();
+  actualizarCupoFormulario_();
+}
+
+function onFormSubmit(e) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    prepararInvitaciones();
+    actualizarCupoFormulario_();
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function actualizarResumen_() {
   const source = getSheet_();
   const columns = ensureColumns_(source);
   const lastRow = source.getLastRow();
-  const headers = source.getRange(1, 1, 1, source.getLastColumn()).getValues()[0];
-  const legacyInvitedByColumn = headers.indexOf('Invitado por') + 1;
   const rows = lastRow < 2 ? [] : source.getRange(2, 1, lastRow - 1, source.getLastColumn()).getValues();
 
   let registered = 0;
@@ -131,9 +142,7 @@ function actualizarResumen_() {
     registered++;
     const allowed = Math.max(0, Math.min(5, Number(row[columns.allowed - 1]) || 0));
     authorizedCompanions += allowed;
-    const invitedBy = String(row[columns.invitedBy - 1] || '').trim() ||
-      (legacyInvitedByColumn ? String(row[legacyInvitedByColumn - 1] || '').trim() : '') ||
-      'Sin asignar';
+    const invitedBy = String(row[columns.invitedBy - 1] || '').trim() || 'Sin asignar';
     if (!groups[invitedBy]) groups[invitedBy] = {guests: 0, companions: 0};
     groups[invitedBy].guests++;
     groups[invitedBy].companions += allowed;
@@ -177,7 +186,7 @@ function actualizarResumen_() {
   });
   summary.getRange('D1:G1').merge().setValue('Invitados por familiar');
   summary.getRange('D1:G1').setBackground('#07162f').setFontColor('#f4d98b').setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
-  summary.getRange('D3:G3').setValues([['Invitado de', 'Invitados principales', 'Acompañantes autorizados', 'Total de personas invitadas']]);
+  summary.getRange('D3:G3').setValues([['Invitado por', 'Invitados principales', 'Acompañantes autorizados', 'Total de personas invitadas']]);
   summary.getRange('D3:G3').setBackground('#173f75').setFontColor('#ffffff').setFontWeight('bold').setWrap(true);
   if (groupRows.length) {
     summary.getRange(4, 4, groupRows.length, 4).setValues(groupRows);
@@ -192,15 +201,84 @@ function actualizarResumen_() {
   summary.setFrozenRows(3);
 }
 
-function configurarCampoInvitadoDe() {
+function configurarCampoInvitadoPor() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const formUrl = spreadsheet.getFormUrl();
   if (!formUrl) throw new Error('La hoja no tiene un formulario vinculado');
   const form = FormApp.openByUrl(formUrl);
-  const exists = form.getItems().some(function(item) {
-    return item.getTitle().trim().toLowerCase() === HEADERS.invitedBy.toLowerCase();
+  const items = form.getItems();
+  const current = items.find(function(item) {
+    return item.getTitle().trim().toLowerCase() === 'invitado por';
   });
-  if (!exists) form.addTextItem().setTitle(HEADERS.invitedBy).setRequired(true);
+  const duplicate = items.find(function(item) {
+    return item.getTitle().trim().toLowerCase() === 'invitado de';
+  });
+  if (current && duplicate) {
+    form.deleteItem(duplicate);
+  } else if (duplicate) {
+    duplicate.asTextItem().setTitle(HEADERS.invitedBy).setRequired(true);
+  } else if (!current) {
+    form.addTextItem().setTitle(HEADERS.invitedBy).setRequired(true);
+  }
+}
+
+function configurarControlCupo() {
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'onFormSubmit') ScriptApp.deleteTrigger(trigger);
+  });
+  ScriptApp.newTrigger('onFormSubmit')
+    .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+    .onFormSubmit()
+    .create();
+  actualizarCupoFormulario_();
+}
+
+function actualizarCupoFormulario_() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const formUrl = spreadsheet.getFormUrl();
+  if (!formUrl) throw new Error('La hoja no tiene un formulario vinculado');
+
+  const total = calcularTotalInvitados_();
+  const disponibles = Math.max(0, MAX_TOTAL_INVITADOS - total);
+  const form = FormApp.openByUrl(formUrl);
+
+  if (disponibles === 0) {
+    form.setCustomClosedFormMessage('Hemos completado el cupo de 180 personas. Gracias.');
+    form.setAcceptingResponses(false);
+    return;
+  }
+
+  form.setAcceptingResponses(true);
+  const maxAcompanantes = Math.min(5, Math.max(0, disponibles - 1));
+  const item = form.getItems(FormApp.ItemType.TEXT).map(function(formItem) {
+    return formItem.asTextItem();
+  }).find(function(textItem) {
+    return textItem.getTitle().trim().toLowerCase() === HEADERS.allowed.toLowerCase();
+  });
+  if (!item) throw new Error('No se encontró la pregunta de cantidad de acompañantes');
+
+  const validationBuilder = FormApp.createTextValidation()
+    .setHelpText('Cupo disponible: ' + disponibles + ' persona(s). Puedes registrar entre 0 y ' + maxAcompanantes + ' acompañante(s).');
+  if (maxAcompanantes === 0) {
+    validationBuilder.requireNumberEqualTo(0);
+  } else {
+    validationBuilder.requireNumberBetween(0, maxAcompanantes);
+  }
+  item.setValidation(validationBuilder.build());
+  item.setHelpText('Cupo disponible: ' + disponibles + ' persona(s). Máximo ' + maxAcompanantes + ' acompañante(s) para este registro.');
+}
+
+function calcularTotalInvitados_() {
+  const sheet = getSheet_();
+  const columns = ensureColumns_(sheet);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return 0;
+  const rows = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+  return rows.reduce(function(total, row) {
+    if (!String(row[columns.name - 1] || '').trim()) return total;
+    const allowed = Math.max(0, Math.min(5, Number(row[columns.allowed - 1]) || 0));
+    return total + 1 + allowed;
+  }, 0);
 }
 
 function findInvitation_(token) {
