@@ -201,25 +201,17 @@ function actualizarResumen_() {
   summary.setFrozenRows(3);
 }
 
-function configurarCampoInvitadoPor() {
+function eliminarCampoInvitadoPorDelFormulario() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const formUrl = spreadsheet.getFormUrl();
   if (!formUrl) throw new Error('La hoja no tiene un formulario vinculado');
   const form = FormApp.openByUrl(formUrl);
-  const items = form.getItems();
-  const current = items.find(function(item) {
-    return item.getTitle().trim().toLowerCase() === 'invitado por';
+  form.getItems().filter(function(item) {
+    const title = item.getTitle().trim().toLowerCase();
+    return title === 'invitado por' || title === 'invitado de';
+  }).reverse().forEach(function(item) {
+    form.deleteItem(item);
   });
-  const duplicate = items.find(function(item) {
-    return item.getTitle().trim().toLowerCase() === 'invitado de';
-  });
-  if (current && duplicate) {
-    form.deleteItem(duplicate);
-  } else if (duplicate) {
-    duplicate.asTextItem().setTitle(HEADERS.invitedBy).setRequired(true);
-  } else if (!current) {
-    form.addTextItem().setTitle(HEADERS.invitedBy).setRequired(true);
-  }
 }
 
 function configurarControlCupo() {
