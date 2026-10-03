@@ -14,7 +14,8 @@ const HEADERS = {
   attendance: 'Asistencia confirmada',
   companionCount: 'Acompañantes confirmados',
   companionNames: 'Nombres de acompañantes',
-  confirmedAt: 'Fecha de confirmación'
+  confirmedAt: 'Fecha de confirmación',
+  reminder: 'Recordatorio de confirmación'
 };
 
 function doGet(e) {
@@ -70,6 +71,7 @@ function doPost(e) {
     sheet.getRange(record.row, columns.companionCount).setValue(count);
     sheet.getRange(record.row, columns.companionNames).setValue(attendance === 'Sí' ? companionNames.join('\n') : '');
     sheet.getRange(record.row, columns.confirmedAt).setValue(new Date());
+    sheet.getRange(record.row, columns.reminder).clearContent();
     actualizarResumen_();
     SpreadsheetApp.flush();
 
@@ -98,6 +100,7 @@ function prepararInvitaciones() {
     sheet.getRange(sheetRow, columns.link).setValue(INVITATION_BASE_URL + '?i=' + token);
   });
   sheet.autoResizeColumns(1, sheet.getLastColumn());
+  actualizarRecordatorios_();
   actualizarResumen_();
   SpreadsheetApp.flush();
 }
@@ -106,10 +109,48 @@ function actualizarResumen() {
   actualizarResumen_();
 }
 
+function actualizarRecordatorios() {
+  actualizarRecordatorios_();
+}
+
 function onEdit(e) {
   if (!e || !e.range || e.range.getSheet().getName() !== SHEET_NAME) return;
+  actualizarRecordatorios_();
   actualizarResumen_();
   actualizarCupoFormulario_();
+}
+
+function actualizarRecordatorios_() {
+  const sheet = getSheet_();
+  const columns = ensureColumns_(sheet);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  const values = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+  const reminders = values.map(function(row) {
+    const name = String(row[columns.name - 1] || '').trim();
+    const confirmed = String(row[columns.confirmed - 1] || '').trim().toLowerCase() === 'sí';
+    const phone = normalizarCelular_(row[columns.phone - 1]);
+    const invitationLink = String(row[columns.link - 1] || '').trim();
+    if (!name || confirmed || !phone || !invitationLink) {
+      return [SpreadsheetApp.newRichTextValue().setText('').build()];
+    }
+
+    const message = 'Hola ' + name + ', queremos recordarte confirmar tu asistencia a los XV de Mariana. Puedes hacerlo en tu enlace personal: ' + invitationLink + '. ¡Gracias!';
+    const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
+    return [SpreadsheetApp.newRichTextValue().setText('Enviar recordatorio').setLinkUrl(url).build()];
+  });
+
+  const reminderRange = sheet.getRange(2, columns.reminder, reminders.length, 1);
+  reminderRange.setRichTextValues(reminders);
+  reminderRange.setFontColor('#1155cc').setWrap(false);
+  sheet.setColumnWidth(columns.reminder, 220);
+}
+
+function normalizarCelular_(value) {
+  let digits = String(value || '').replace(/\D/g, '');
+  if (digits.length === 10 && digits.charAt(0) === '3') digits = '57' + digits;
+  return /^57\d{10}$/.test(digits) ? digits : '';
 }
 
 function onFormSubmit(e) {
