@@ -112,7 +112,14 @@ async function loadInvitation(){
   try{
     const response=await fetch(`${RSVP_ENDPOINT}?i=${encodeURIComponent(invitationToken)}`,{cache:'no-store'});
     const result=await response.json();
-    if(!result.ok)throw new Error(result.error||'Invitación no encontrada');
+    if(!result.ok){
+      if(result.inactive){
+        $('#rsvpCardText').textContent='Esta invitación ya no se encuentra activa.';
+        showToast('Este enlace fue deshabilitado');
+        return;
+      }
+      throw new Error(result.error||'Invitación no encontrada');
+    }
     invitation=result;$('#guestName').value=result.name;fillCompanionOptions(result.maxCompanions);
     if(result.confirmed){
       const detail=result.attendance==='Sí'?`Confirmaste tu asistencia con ${result.companionCount} ${result.companionCount===1?'acompañante':'acompañantes'}.`:'Registraste que no podrás asistir.';
