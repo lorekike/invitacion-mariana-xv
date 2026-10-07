@@ -15,7 +15,8 @@ const HEADERS = {
   companionCount: 'Acompañantes confirmados',
   companionNames: 'Nombres de acompañantes',
   confirmedAt: 'Fecha de confirmación',
-  reminder: 'Recordatorio de confirmación'
+  reminder: 'Recordatorio de confirmación',
+  linkStatus: 'Estado del enlace'
 };
 
 function doGet(e) {
@@ -25,6 +26,7 @@ function doGet(e) {
 
     const record = findInvitation_(token);
     if (!record) return json_({ok: false, error: 'Invitación no encontrada'});
+    if (!record.active) return json_({ok: false, inactive: true, error: 'Esta invitación ya no se encuentra activa'});
 
     return json_({
       ok: true,
@@ -55,6 +57,7 @@ function doPost(e) {
 
     const record = findInvitation_(token);
     if (!record) return json_({ok: false, error: 'Invitación no encontrada'});
+    if (!record.active) return json_({ok: false, inactive: true, error: 'Esta invitación ya no se encuentra activa'});
     if (record.confirmed) return json_({ok: false, duplicate: true, error: 'Esta invitación ya fue confirmada'});
     if (companionCount < 0 || companionCount > record.maxCompanions) {
       return json_({ok: false, error: 'La cantidad supera el cupo autorizado'});
@@ -98,6 +101,9 @@ function prepararInvitaciones() {
     if (!token) token = Utilities.getUuid().replace(/-/g, '').slice(0, 24);
     sheet.getRange(sheetRow, columns.token).setValue(token);
     sheet.getRange(sheetRow, columns.link).setValue(INVITATION_BASE_URL + '?i=' + token);
+    if (!String(row[columns.linkStatus - 1] || '').trim()) {
+      sheet.getRange(sheetRow, columns.linkStatus).setValue('Activa');
+    }
   });
   sheet.autoResizeColumns(1, sheet.getLastColumn());
   actualizarRecordatorios_();
@@ -132,7 +138,8 @@ function actualizarRecordatorios_() {
     const confirmed = String(row[columns.confirmed - 1] || '').trim().toLowerCase() === 'sí';
     const phone = normalizarCelular_(row[columns.phone - 1]);
     const invitationLink = String(row[columns.link - 1] || '').trim();
-    if (!name || confirmed || !phone || !invitationLink) {
+    const active = String(row[columns.linkStatus - 1] || 'Activa').trim().toLowerCase() !== 'inactiva';
+    if (!name || confirmed || !active || !phone || !invitationLink) {
       return [SpreadsheetApp.newRichTextValue().setText('').build()];
     }
 
@@ -333,6 +340,7 @@ function findInvitation_(token) {
     return {
       row: index + 2,
       name: String(row[columns.name - 1] || '').trim(),
+      active: String(row[columns.linkStatus - 1] || 'Activa').trim().toLowerCase() !== 'inactiva',
       maxCompanions: Math.max(0, Math.min(5, Number(row[columns.allowed - 1]) || 0)),
       confirmed: String(row[columns.confirmed - 1] || '').trim().toLowerCase() === 'sí',
       attendance: String(row[columns.attendance - 1] || '').trim(),
