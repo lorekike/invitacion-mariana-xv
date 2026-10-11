@@ -143,13 +143,16 @@ function actualizarRecordatorios_() {
       return [SpreadsheetApp.newRichTextValue().setText('').build()];
     }
 
-    const message = '🦋 Recordatorio – XV años de Mariana 🦋\n\n' +
+    const butterfly = String.fromCodePoint(0x1F98B);
+    const blueHeart = String.fromCodePoint(0x1F499);
+    const sparkles = String.fromCodePoint(0x2728);
+    const message = butterfly + ' Recordatorio – XV años de Mariana ' + butterfly + '\n\n' +
       'Hola ' + name + ',\n\n' +
       'Con mucha ilusión estamos preparando esta noche tan especial y nos encantaría contar con tu compañía.\n\n' +
       'Para organizar la lista definitiva de asistentes, te agradecemos confirmar tu asistencia antes del 15 de octubre mediante tu enlace personal:\n' +
       invitationLink + '\n\n' +
       'Ten presente que el ingreso al evento se realizará de acuerdo con la lista de personas confirmadas. Si para esa fecha no hemos recibido tu respuesta, entenderemos que no podrás acompañarnos y el cupo será liberado.\n\n' +
-      '¡Esperamos poder celebrar contigo! 💙✨';
+      '¡Esperamos poder celebrar contigo! ' + blueHeart + sparkles;
     const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
     return [SpreadsheetApp.newRichTextValue().setText('Enviar recordatorio').setLinkUrl(url).build()];
   });
@@ -162,8 +165,9 @@ function actualizarRecordatorios_() {
 
 function normalizarCelular_(value) {
   let digits = String(value || '').replace(/\D/g, '');
+  if (digits.indexOf('00') === 0) digits = digits.substring(2);
   if (digits.length === 10 && digits.charAt(0) === '3') digits = '57' + digits;
-  return /^57\d{10}$/.test(digits) ? digits : '';
+  return /^\d{8,15}$/.test(digits) ? digits : '';
 }
 
 function onFormSubmit(e) {
