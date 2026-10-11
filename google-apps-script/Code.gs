@@ -143,7 +143,13 @@ function actualizarRecordatorios_() {
       return [SpreadsheetApp.newRichTextValue().setText('').build()];
     }
 
-    const message = 'Hola ' + name + ', queremos recordarte confirmar tu asistencia a los XV de Mariana. Puedes hacerlo en tu enlace personal: ' + invitationLink + '. ¡Gracias!';
+    const message = '🦋 Recordatorio – XV años de Mariana 🦋\n\n' +
+      'Hola ' + name + ',\n\n' +
+      'Con mucha ilusión estamos preparando esta noche tan especial y nos encantaría contar con tu compañía.\n\n' +
+      'Para organizar la lista definitiva de asistentes, te agradecemos confirmar tu asistencia antes del 15 de octubre mediante tu enlace personal:\n' +
+      invitationLink + '\n\n' +
+      'Ten presente que el ingreso al evento se realizará de acuerdo con la lista de personas confirmadas. Si para esa fecha no hemos recibido tu respuesta, entenderemos que no podrás acompañarnos y el cupo será liberado.\n\n' +
+      '¡Esperamos poder celebrar contigo! 💙✨';
     const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
     return [SpreadsheetApp.newRichTextValue().setText('Enviar recordatorio').setLinkUrl(url).build()];
   });
@@ -323,8 +329,17 @@ function calcularTotalInvitados_() {
   const rows = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
   return rows.reduce(function(total, row) {
     if (!String(row[columns.name - 1] || '').trim()) return total;
+    const active = String(row[columns.linkStatus - 1] || 'Activa').trim().toLowerCase() !== 'inactiva';
+    if (!active) return total;
     const allowed = Math.max(0, Math.min(5, Number(row[columns.allowed - 1]) || 0));
-    return total + 1 + allowed;
+    const confirmed = String(row[columns.confirmed - 1] || '').trim().toLowerCase() === 'sí';
+    if (!confirmed) return total + 1 + allowed;
+
+    const attendance = String(row[columns.attendance - 1] || '').trim();
+    if (attendance !== 'Sí') return total;
+
+    const companions = Math.max(0, Math.min(allowed, Number(row[columns.companionCount - 1]) || 0));
+    return total + 1 + companions;
   }, 0);
 }
 
