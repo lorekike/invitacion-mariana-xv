@@ -211,12 +211,25 @@ function actualizarResumen_() {
     }
   });
 
+  const occupiedSlots = rows.reduce(function(total, row) {
+    if (!String(row[columns.name - 1] || '').trim()) return total;
+    const active = String(row[columns.linkStatus - 1] || 'Activa').trim().toLowerCase() !== 'inactiva';
+    if (!active) return total;
+    const allowed = Math.max(0, Math.min(5, Number(row[columns.allowed - 1]) || 0));
+    const confirmed = String(row[columns.confirmed - 1] || '').trim().toLowerCase() === 'sí';
+    if (!confirmed) return total + 1 + allowed;
+    if (String(row[columns.attendance - 1] || '').trim() !== 'Sí') return total;
+    const confirmedCompanions = Math.max(0, Math.min(allowed, Number(row[columns.companionCount - 1]) || 0));
+    return total + 1 + confirmedCompanions;
+  }, 0);
+  const availableSlots = Math.max(0, MAX_TOTAL_INVITADOS - occupiedSlots);
+
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   let summary = spreadsheet.getSheetByName(SUMMARY_SHEET_NAME);
   if (!summary) summary = spreadsheet.insertSheet(SUMMARY_SHEET_NAME, 0);
   summary.clear();
   summary.getRange('A1:B1').merge().setValue('Resumen de confirmaciones');
-  summary.getRange('A3:B12').setValues([
+  summary.getRange('A3:B14').setValues([
     ['Indicador', 'Cantidad'],
     ['Invitados principales registrados', registered],
     ['Acompañantes autorizados', authorizedCompanions],
@@ -226,15 +239,19 @@ function actualizarResumen_() {
     ['Acompañantes confirmados', companions],
     ['Total de personas que asistirán', attending + companions],
     ['Invitados que no asistirán', notAttending],
-    ['Invitados sin responder', Math.max(0, registered - responses)]
+    ['Invitados sin responder', Math.max(0, registered - responses)],
+    ['Cupos ocupados vigentes', occupiedSlots],
+    ['Cupos disponibles para nuevas invitaciones', availableSlots]
   ]);
   summary.getRange('A1:B1').setBackground('#07162f').setFontColor('#f4d98b').setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
   summary.getRange('A3:B3').setBackground('#173f75').setFontColor('#ffffff').setFontWeight('bold');
-  summary.getRange('A4:A12').setFontWeight('bold');
-  summary.getRange('B4:B12').setNumberFormat('0').setHorizontalAlignment('center');
+  summary.getRange('A4:A14').setFontWeight('bold');
+  summary.getRange('B4:B14').setNumberFormat('0').setHorizontalAlignment('center');
   summary.getRange('A6:B6').setBackground('#e8eef7').setFontColor('#07162f').setFontWeight('bold');
   summary.getRange('A10:B10').setBackground('#f4d98b').setFontColor('#07162f').setFontWeight('bold');
   summary.getRange('A12:B12').setBackground('#e8eef7');
+  summary.getRange('A13:B13').setBackground('#e8eef7').setFontColor('#07162f').setFontWeight('bold');
+  summary.getRange('A14:B14').setBackground('#f4d98b').setFontColor('#07162f').setFontWeight('bold');
   const groupRows = Object.keys(groups).sort().map(function(invitedBy) {
     return [invitedBy, groups[invitedBy].guests, groups[invitedBy].companions, groups[invitedBy].guests + groups[invitedBy].companions];
   });
