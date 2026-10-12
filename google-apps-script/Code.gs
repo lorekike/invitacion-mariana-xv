@@ -201,10 +201,13 @@ function actualizarResumen_() {
     const allowed = Math.max(0, Math.min(5, Number(row[columns.allowed - 1]) || 0));
     authorizedCompanions += allowed;
     const invitedBy = String(row[columns.invitedBy - 1] || '').trim() || 'Sin asignar';
-    if (!groups[invitedBy]) groups[invitedBy] = {guests: 0, companions: 0};
+    if (!groups[invitedBy]) groups[invitedBy] = {guests: 0, companions: 0, confirmed: 0, pending: 0};
     groups[invitedBy].guests++;
     groups[invitedBy].companions += allowed;
     const confirmed = String(row[columns.confirmed - 1] || '').trim().toLowerCase() === 'sí';
+    const active = String(row[columns.linkStatus - 1] || 'Activa').trim().toLowerCase() !== 'inactiva';
+    if (confirmed) groups[invitedBy].confirmed++;
+    else if (active) groups[invitedBy].pending++;
     const attendance = String(row[columns.attendance - 1] || '').trim();
     if (confirmed) responses++;
     if (attendance === 'Sí') {
@@ -257,15 +260,15 @@ function actualizarResumen_() {
   summary.getRange('A13:B13').setBackground('#e8eef7').setFontColor('#07162f').setFontWeight('bold');
   summary.getRange('A14:B14').setBackground('#f4d98b').setFontColor('#07162f').setFontWeight('bold');
   const groupRows = Object.keys(groups).sort().map(function(invitedBy) {
-    return [invitedBy, groups[invitedBy].guests, groups[invitedBy].companions, groups[invitedBy].guests + groups[invitedBy].companions];
+    return [invitedBy, groups[invitedBy].guests, groups[invitedBy].companions, groups[invitedBy].guests + groups[invitedBy].companions, groups[invitedBy].confirmed, groups[invitedBy].pending];
   });
-  summary.getRange('D1:G1').merge().setValue('Invitados por familiar');
-  summary.getRange('D1:G1').setBackground('#07162f').setFontColor('#f4d98b').setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
-  summary.getRange('D3:G3').setValues([['Invitado por', 'Invitados principales', 'Acompañantes autorizados', 'Total de personas invitadas']]);
-  summary.getRange('D3:G3').setBackground('#173f75').setFontColor('#ffffff').setFontWeight('bold').setWrap(true);
+  summary.getRange('D1:I1').merge().setValue('Invitados por familiar');
+  summary.getRange('D1:I1').setBackground('#07162f').setFontColor('#f4d98b').setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
+  summary.getRange('D3:I3').setValues([['Invitado por', 'Invitados principales', 'Acompañantes autorizados', 'Total de personas invitadas', 'Confirmados', 'Pendientes de confirmar']]);
+  summary.getRange('D3:I3').setBackground('#173f75').setFontColor('#ffffff').setFontWeight('bold').setWrap(true);
   if (groupRows.length) {
-    summary.getRange(4, 4, groupRows.length, 4).setValues(groupRows);
-    summary.getRange(4, 5, groupRows.length, 3).setNumberFormat('0').setHorizontalAlignment('center');
+    summary.getRange(4, 4, groupRows.length, 6).setValues(groupRows);
+    summary.getRange(4, 5, groupRows.length, 5).setNumberFormat('0').setHorizontalAlignment('center');
   }
   summary.setColumnWidth(1, 260);
   summary.setColumnWidth(2, 110);
@@ -273,6 +276,8 @@ function actualizarResumen_() {
   summary.setColumnWidth(5, 130);
   summary.setColumnWidth(6, 150);
   summary.setColumnWidth(7, 150);
+  summary.setColumnWidth(8, 120);
+  summary.setColumnWidth(9, 145);
   summary.setFrozenRows(3);
 }
 
