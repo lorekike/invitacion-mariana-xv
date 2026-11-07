@@ -63,7 +63,7 @@ function draw(t){ctx.clearRect(0,0,w,h);for(const s of stars){const tw=.55+.45*M
 const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}}),{threshold:.14});$$('.reveal').forEach(el=>io.observe(el));
 
 // Cuenta regresiva
-const target=new Date('2026-11-15T20:00:00-05:00').getTime();
+const target=new Date('2026-11-15T19:00:00-05:00').getTime();
 function tick(){const d=Math.max(0,target-Date.now());$('#days').textContent=String(Math.floor(d/86400000)).padStart(3,'0');$('#hours').textContent=String(Math.floor(d/3600000)%24).padStart(2,'0');$('#minutes').textContent=String(Math.floor(d/60000)%60).padStart(2,'0');$('#seconds').textContent=String(Math.floor(d/1000)%60).padStart(2,'0')}tick();setInterval(tick,1000);
 
 // Carrusel
@@ -73,7 +73,7 @@ function go(n){slides[current].classList.remove('active');dots.children[current]
 const prev=$('.prev'),next=$('.next');if(prev)prev.onclick=()=>go(current-1);if(next)next.onclick=()=>go(current+1);go(0)}
 
 // Calendario ICS
-const calendarBtn=$('#calendarBtn');if(calendarBtn)calendarBtn.addEventListener('click',()=>{const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//XV Mariana//ES\r\nBEGIN:VEVENT\r\nUID:mariana-xv-20261115@example.com\r\nDTSTAMP:20260714T190000Z\r\nDTSTART:20261116T010000Z\r\nDTEND:20261116T060000Z\r\nSUMMARY:XV años de Mariana Rojas Sierra\r\nLOCATION:Orquideorama, Av. 2 Norte # 48-10\r\nDESCRIPTION:Celebración de los XV años de Mariana. Código de vestuario: formal. El color azul está reservado para Mariana.\r\nEND:VEVENT\r\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='XV-Mariana-Rojas-Sierra.ics';a.click();URL.revokeObjectURL(a.href)});
+const calendarBtn=$('#calendarBtn');if(calendarBtn)calendarBtn.addEventListener('click',()=>{const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//XV Mariana//ES\r\nBEGIN:VEVENT\r\nUID:mariana-xv-20261115@example.com\r\nDTSTAMP:20260714T190000Z\r\nDTSTART:20261116T000000Z\r\nDTEND:20261116T050000Z\r\nSUMMARY:XV años de Mariana Rojas Sierra\r\nLOCATION:Orquideorama, Av. 2 Norte # 48-10\r\nDESCRIPTION:Celebración de los XV años de Mariana. Código de vestuario: formal. El color azul está reservado para Mariana.\r\nEND:VEVENT\r\nEND:VCALENDAR`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download='XV-Mariana-Rojas-Sierra.ics';a.click();URL.revokeObjectURL(a.href)});
 
 // RSVP · invitaciones personalizadas conectadas a Google Sheets
 const dialog=$('#rsvpDialog'),form=$('#rsvpForm');
